@@ -1,0 +1,7 @@
+/* styles/globals.css
+ *
+ * NOTE: This file is not imported anywhere (the app imports only src/index.css).
+ * The complete design system — tokens, typography, recharts/form overrides,
+ * skeletons, focus states, and reduced-motion rules — now lives in src/index.css.
+ * Kept intentionally empty to prevent duplicated/diverging style sources.
+ */
