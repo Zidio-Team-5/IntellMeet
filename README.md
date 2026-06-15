@@ -61,8 +61,3 @@ Developed as part of the Zidio Web Development Internship Program.
 
 🚧 Currently in Development
 
-<<<<<<< HEAD
-Phase 1: Foundation & Authentication
-=======
-Phase 1: Foundation & Authentication
->>>>>>> 18ad729120dce87a6dfdcb944319e92428d3946c
