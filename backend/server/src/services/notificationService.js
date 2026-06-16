@@ -1,4 +1,5 @@
 import { Notification } from "../models/Notification.js";
+import { emitToUser } from "../sockets/registry.js";
 
 const serialize = (n) => ({
   _id: String(n._id || n.id), id: String(n._id || n.id),
@@ -11,6 +12,14 @@ export const list = async (userId) => {
   return { notifications: items.map(serialize).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)) };
 };
 export const create = (userId, { type, message }) => Notification.create({ userId, type: type || "info", message, read: false });
+// Create a notification AND push it to the user in realtime (best-effort).
+export const notify = async (userId, { type = "info", message }) => {
+  if (!userId || !message) return null;
+  const n = await Notification.create({ userId: String(userId), type, message, read: false });
+  const payload = serialize(n);
+  emitToUser(String(userId), "notification:new", payload);
+  return payload;
+};
 export const markRead = async (userId, id) => {
   const n = await Notification.findById(id); if (!n || n.userId !== userId) throw notFound();
   return serialize(await Notification.findByIdAndUpdate(id, { read: true }, { new: true }));

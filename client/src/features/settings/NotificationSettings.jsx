@@ -2,6 +2,9 @@ import { useState } from "react";
 import { Bell, Save } from "lucide-react";
 import Card from "../../shared/ui/Card.jsx";
 import Button from "../../shared/ui/Button.jsx";
+import useSettingsStore from "../../core/store/settingsStore.js";
+import { updateSettings } from "../../services/userService.js";
+import { toast } from "../../core/store/toastStore.js";
 
 function Toggle({ label, description, checked, onChange }) {
   return (
@@ -28,16 +31,23 @@ function Toggle({ label, description, checked, onChange }) {
 }
 
 export default function NotificationSettings() {
-  const [settings, setSettings] = useState({
-    meetingReminders: true,
-    taskAssignments: true,
-    aiSummaries: true,
-    teamActivity: false,
-    emailDigest: true,
-    pushNotifications: false,
-  });
+  const settings = useSettingsStore((s) => s.notifications);
+  const setNotification = useSettingsStore((s) => s.setNotification);
+  const [saving, setSaving] = useState(false);
 
-  const toggle = (key) => (val) => setSettings((p) => ({ ...p, [key]: val }));
+  const toggle = (key) => (val) => setNotification(key, val);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await updateSettings({ notifications: settings });
+      toast({ type: "success", title: "Preferences saved", message: "Your notification settings were updated." });
+    } catch {
+      toast({ type: "warning", title: "Couldn't save", message: "Saved locally; will retry when online." });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <Card>
@@ -52,7 +62,7 @@ export default function NotificationSettings() {
       <Toggle label="Email Digest"       description="Daily summary via email"                 checked={settings.emailDigest}       onChange={toggle("emailDigest")} />
       <Toggle label="Push Notifications" description="Browser push notifications"              checked={settings.pushNotifications} onChange={toggle("pushNotifications")} />
       <div className="mt-5 flex justify-end">
-        <Button icon={Save}>Save preferences</Button>
+        <Button icon={Save} loading={saving} onClick={save}>Save preferences</Button>
       </div>
     </Card>
   );

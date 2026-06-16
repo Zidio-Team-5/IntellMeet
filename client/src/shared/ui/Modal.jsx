@@ -50,14 +50,14 @@ export default function Modal({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-black/50 backdrop-blur-[6px]"
         onClick={onClose}
       />
       {/* Panel */}
       <div
         ref={panelRef}
         tabIndex={-1}
-        className={`relative w-full ${SIZES[size] || SIZES.md} animate-scale-in rounded-[12px] border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-xl)] outline-none ${className}`}
+        className={`glass-panel relative w-full ${SIZES[size] || SIZES.md} animate-scale-in !rounded-[14px] outline-none ${className}`}
       >
         {title && (
           <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3.5">

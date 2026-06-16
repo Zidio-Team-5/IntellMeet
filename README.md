@@ -42,3 +42,4 @@ Notifications, Search.
 
 ## 👥 Team
 Developed as part of the Zidio Web Development Internship Program.
+

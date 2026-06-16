@@ -1,17 +1,9 @@
-import { useState } from "react";
 import Card from "../../shared/ui/Card.jsx";
-import Button from "../../shared/ui/Button.jsx";
+import useSettingsStore from "../../core/store/settingsStore.js";
 
 export default function AccessibilitySettings() {
-  const [settings, setSettings] = useState({
-    reducedMotion: false,
-    highContrast: false,
-    largeText: false,
-    screenReader: false,
-    keyboardNav: true,
-  });
-
-  const toggle = (key) => setSettings((p) => ({ ...p, [key]: !p[key] }));
+  const settings = useSettingsStore((s) => s.accessibility);
+  const setAccessibility = useSettingsStore((s) => s.setAccessibility);
 
   return (
     <Card>
@@ -20,7 +12,6 @@ export default function AccessibilitySettings() {
         { key: "reducedMotion", label: "Reduce Motion",         desc: "Minimize animations and transitions" },
         { key: "highContrast",  label: "High Contrast Mode",    desc: "Increase color contrast ratios" },
         { key: "largeText",     label: "Large Text",            desc: "Increase font sizes throughout the app" },
-        { key: "keyboardNav",   label: "Enhanced Keyboard Nav", desc: "Visible focus indicators for keyboard users" },
       ].map(({ key, label, desc }) => (
         <div key={key} className="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] py-3 last:border-0">
           <div className="min-w-0">
@@ -28,7 +19,7 @@ export default function AccessibilitySettings() {
             <p className="mt-0.5 text-xs text-[var(--text-muted)]">{desc}</p>
           </div>
           <button
-            onClick={() => toggle(key)}
+            onClick={() => setAccessibility(key, !settings[key])}
             className="relative h-5 w-9 flex-shrink-0 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)]"
             style={{ background: settings[key] ? "var(--brand)" : "var(--muted)" }}
             aria-checked={settings[key]}
@@ -42,9 +33,7 @@ export default function AccessibilitySettings() {
           </button>
         </div>
       ))}
-      <div className="mt-5 flex justify-end">
-        <Button>Apply settings</Button>
-      </div>
+      <p className="mt-4 text-xs text-[var(--text-muted)]">Changes apply instantly across the app.</p>
     </Card>
   );
 }

@@ -1,5 +1,6 @@
 import { Meeting } from "../models/Meeting.js";
 import { Chat } from "../models/Chat.js";
+import { notify } from "./notificationService.js";
 
 const roomId = () => {
   const c = "abcdefghijklmnopqrstuvwxyz";
@@ -50,6 +51,7 @@ export const create = async (title, hostId) => {
     title, roomId: roomId(), host: String(hostId),
     participants: [], transcript: [], isActive: true, summary: "",
   });
+  notify(hostId, { type: "meeting", message: `Meeting "${title}" is ready. Room ${m.roomId}.` }).catch(() => {});
   return serialize(m);
 };
 
@@ -83,7 +85,9 @@ export const leave = async (idOrRoom, userId) => {
 
 export const end = async (idOrRoom) => {
   const m = await resolve(idOrRoom); if (!m) throw notFound();
-  return serialize(await Meeting.findByIdAndUpdate(m._id, { isActive: false }, { new: true }));
+  const ended = await Meeting.findByIdAndUpdate(m._id, { isActive: false }, { new: true });
+  if (ended?.summary) notify(ended.host, { type: "ai", message: `AI summary ready for "${ended.title}".` }).catch(() => {});
+  return serialize(ended);
 };
 
 export const transcript = async (idOrRoom) => {

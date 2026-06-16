@@ -6,19 +6,23 @@ export default function Card({
   padding = "p-6",
   onClick,
 }) {
-  // Radius tightened to --radius-lg (10px). Hierarchy via border + bg, no shadow stacking.
-  const base = "rounded-[10px] border border-[var(--border)] bg-[var(--card)]";
-  const bg = glass ? "bg-[var(--bg-overlay)] border-[var(--border)]" : "";
+  // Solid surface (default) vs. frosted glass panel. Radius/hierarchy unchanged.
+  const base = glass
+    ? "glass-panel"
+    : "rounded-[10px] border border-[var(--border)] bg-[var(--card)]";
 
-  // Interactive: NO translate/lift. Background + border shift only (subtle, fast).
+  // Interactive: subtle. Glass cards get a gentle lift; solid cards keep the
+  // original border/background shift (no layout change either way).
+  const interactiveGlass =
+    "cursor-pointer glass-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/40";
+  const interactiveSolid =
+    "cursor-pointer transition-colors duration-150 hover:bg-[var(--card-hover)] hover:border-[var(--border-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/40";
   const interactive =
-    hover || onClick
-      ? "cursor-pointer transition-colors duration-150 hover:bg-[var(--card-hover)] hover:border-[var(--border-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/40"
-      : "";
+    hover || onClick ? (glass ? interactiveGlass : interactiveSolid) : "";
 
   return (
     <div
-      className={`${base} ${bg} ${interactive} ${padding} ${className}`}
+      className={`${base} ${interactive} ${padding} ${className}`}
       onClick={onClick}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}

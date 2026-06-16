@@ -1,15 +1,25 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, Search, Command, Menu } from "lucide-react";
 import ThemeToggle from "./ThemeToggle.jsx";
 import Logo from "./Logo.jsx";
 import useAuthStore from "../../core/store/authStore.js";
 import { initials, avatarColor } from "../utils/formatters.js";
+import useNotifications from "../../shared/hooks/useNotifications.js";
+import NotificationCenter from "../../features/notifications/NotificationCenter.jsx";
+
 
 export default function Navbar({ onMenuClick }) {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationRef = useRef(null);
+
+  // Live unread count (polled + invalidated by the realtime notification event).
+  const { data: notifData } = useNotifications();
+  const notifications = notifData?.notifications ?? notifData ?? [];
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   // Existing behavior preserved: Enter submits to the search route.
   const handleSearch = (e) => {
@@ -17,9 +27,25 @@ export default function Navbar({ onMenuClick }) {
       navigate(`/search?q=${encodeURIComponent(searchValue)}`);
     }
   };
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      ) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
-    <header className="sticky top-0 z-30 flex h-12 flex-shrink-0 items-center gap-3 border-b border-[var(--border)] bg-[var(--background)] px-3 sm:px-4">
+    <header className="glass-strong sticky top-0 z-30 flex h-12 flex-shrink-0 items-center gap-3 border-b border-[var(--border)] px-3 sm:px-4">
       {/* Mobile: menu + compact logo (sidebar is hidden below lg) */}
       <button
         onClick={onMenuClick}
@@ -52,14 +78,44 @@ export default function Navbar({ onMenuClick }) {
       </div>
 
       <div className="ml-auto flex items-center gap-1.5">
-        <button
-          onClick={() => navigate("/notifications")}
-          className="relative flex h-8 w-8 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--card)] text-[var(--text-secondary)] transition-colors hover:bg-[var(--muted)] hover:text-[var(--text)]"
-          aria-label="Notifications"
-        >
-          <Bell size={15} />
-          <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[var(--brand)]" />
-        </button>
+
+        <div className="relative" ref={notificationRef}>
+          <button
+            onClick={() => setShowNotifications((prev) => !prev)}
+            className="relative flex h-8 w-8 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--card)] text-[var(--text-secondary)] transition-colors hover:bg-[var(--muted)] hover:text-[var(--text)]"
+            aria-label="Notifications"
+          >
+            <Bell size={15} />
+
+            {unreadCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--brand)] px-1 text-[10px] font-bold leading-none text-white">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {showNotifications && (
+            <div
+              className="
+          absolute
+          right-0
+          top-full
+          mt-2
+          z-50
+          w-[420px]
+          max-h-[500px]
+          overflow-y-auto
+          rounded-2xl
+          border
+          border-[var(--border)]
+          bg-[var(--card)]
+          shadow-2xl
+        "
+            >
+              <NotificationCenter />
+            </div>
+          )}
+        </div>
 
         <ThemeToggle />
 
@@ -71,7 +127,8 @@ export default function Navbar({ onMenuClick }) {
         >
           {initials(user?.name || "U")}
         </button>
+
       </div>
-    </header>
+    </header >
   );
 }

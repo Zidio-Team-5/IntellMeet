@@ -1,4 +1,6 @@
 import { Task } from "../models/Task.js";
+import { User } from "../models/User.js";
+import { notify } from "./notificationService.js";
 
 const VALID = ["todo", "in_progress", "completed"];
 const notFound = () => { const e = new Error("Task not found."); e.status = 404; return e; };
@@ -9,6 +11,16 @@ const normStatus = (s) => {
   const v = s === "in-progress" ? "in_progress" : s;
   if (!VALID.includes(v)) { const e = new Error(`Invalid status. Allowed: ${VALID.join(", ")}`); e.status = 400; throw e; }
   return v;
+};
+
+
+// Notify the assignee (matched by name) that a task was assigned to them.
+const notifyAssignee = async (assignee, title) => {
+  if (!assignee) return;
+  try {
+    const u = await User.findOne({ name: assignee });
+    if (u) notify(u._id, { type: "task", message: `You were assigned: "${title}".` }).catch(() => {});
+  } catch { /* best-effort */ }
 };
 
 const serialize = (t) => ({
@@ -29,6 +41,7 @@ export const create = async (b) => {
     assignee: b.assignee || "", priority: b.priority || "medium",
     status: normStatus(b.status) || "todo", dueDate: b.dueDate,
   });
+  if (t.assignee) notifyAssignee(t.assignee, t.title);
   return serialize(t);
 };
 
@@ -48,6 +61,7 @@ export const update = async (id, b) => {
 export const assign = async (id, assignee) => {
   const t = await Task.findByIdAndUpdate(id, { assignee }, { new: true });
   if (!t) throw notFound();
+  notifyAssignee(assignee, t.title);
   return serialize(t);
 };
 

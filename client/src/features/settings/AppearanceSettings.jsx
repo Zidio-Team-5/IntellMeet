@@ -1,6 +1,7 @@
-import { Sun, Moon, Monitor } from "lucide-react";
+import { Sun, Moon, Monitor, Check } from "lucide-react";
 import Card from "../../shared/ui/Card.jsx";
 import { useTheme } from "../../theme/ThemeContext.jsx";
+import useSettingsStore, { ACCENTS } from "../../core/store/settingsStore.js";
 
 const THEMES = [
   { value: "light",  label: "Light",  icon: Sun },
@@ -8,10 +9,10 @@ const THEMES = [
   { value: "system", label: "System", icon: Monitor },
 ];
 
-const ACCENT_COLORS = ["#e63946", "#457b9d", "#2a9d8f", "#6d6875", "#e9c46a", "#f4a261"];
-
 export default function AppearanceSettings() {
-  const { theme, setTheme } = useTheme();
+  const { mode, setMode } = useTheme();
+  const accent = useSettingsStore((s) => s.appearance.accent);
+  const setAccent = useSettingsStore((s) => s.setAccent);
 
   return (
     <Card>
@@ -21,11 +22,12 @@ export default function AppearanceSettings() {
         <p className="mb-3 text-sm font-medium text-[var(--text)]">Theme</p>
         <div className="grid grid-cols-3 gap-3">
           {THEMES.map(({ value, label, icon: Icon }) => {
-            const active = theme === value;
+            const active = mode === value;
             return (
               <button
                 key={value}
-                onClick={() => value !== "system" && setTheme(value)}
+                onClick={() => setMode(value)}
+                aria-pressed={active}
                 className={`flex flex-col items-center gap-2 rounded-md border p-4 transition-colors ${
                   active
                     ? "border-[var(--brand)] bg-[var(--brand-subtle)]"
@@ -43,15 +45,22 @@ export default function AppearanceSettings() {
       <div>
         <p className="mb-3 text-sm font-medium text-[var(--text)]">Accent color</p>
         <div className="flex flex-wrap gap-2">
-          {ACCENT_COLORS.map((color) => (
-            <button
-              key={color}
-              className="h-7 w-7 rounded-full border-2 border-[var(--card)] outline-none transition-shadow focus-visible:outline-2 focus-visible:outline-offset-2 hover:ring-2 hover:ring-[var(--border-hover)]"
-              style={{ background: color, outlineColor: color }}
-              title={color}
-              aria-label={`Accent ${color}`}
-            />
-          ))}
+          {ACCENTS.map(({ value, name }) => {
+            const active = accent === value;
+            return (
+              <button
+                key={value}
+                onClick={() => setAccent(value)}
+                className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[var(--card)] outline-none transition-shadow focus-visible:outline-2 focus-visible:outline-offset-2 hover:ring-2 hover:ring-[var(--border-hover)]"
+                style={{ background: value, outlineColor: value, boxShadow: active ? `0 0 0 2px var(--card), 0 0 0 4px ${value}` : undefined }}
+                title={name}
+                aria-label={`Accent ${name}`}
+                aria-pressed={active}
+              >
+                {active && <Check size={13} className="text-white" />}
+              </button>
+            );
+          })}
         </div>
       </div>
     </Card>

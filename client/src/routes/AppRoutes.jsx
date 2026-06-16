@@ -3,6 +3,8 @@ import { Routes, Route } from "react-router-dom";
 import RouteLoader from "./RouteLoader.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
 import PublicRoute from "./PublicRoute.jsx";
+import NotificationCenter from "../features/notifications/NotificationCenter";
+import Notifications from "../pages/Notifications.jsx";
 
 const Login        = lazy(() => import("../pages/Login.jsx"));
 const Register     = lazy(() => import("../pages/Register.jsx"));
@@ -39,7 +41,6 @@ export default function AppRoutes() {
         <Route path="/team"        element={<ProtectedRoute><Team /></ProtectedRoute>} />
         <Route path="/profile"     element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/settings"    element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-
         {/* 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>

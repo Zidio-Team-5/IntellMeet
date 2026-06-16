@@ -398,3 +398,138 @@ input[type="time"] { color-scheme: light; }
     scroll-behavior: auto !important;
   }
 }
+/* ============================================================
+   GLASSMORPHISM LAYER  (additive — extends the existing tokens)
+   Frosted panels, layered depth, ambient background. Token names
+   are new; nothing above is removed or renamed.
+   ============================================================ */
+
+/* ── Glass tokens: LIGHT ─────────────────────────────────────── */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.62);
+  --glass-bg-strong: rgba(255, 255, 255, 0.80);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --glass-border-strong: rgba(20, 22, 28, 0.10);
+  --glass-highlight: rgba(255, 255, 255, 0.70);
+  --glass-shadow: 0 8px 32px rgba(20, 22, 40, 0.10), 0 2px 8px rgba(20, 22, 40, 0.06);
+  --glass-blur: 16px;
+  --glass-blur-sm: 10px;
+
+  /* Ambient page wash — soft brand-tinted glows behind glass. */
+  --ambient:
+    radial-gradient(900px 500px at 12% -8%, rgba(59, 130, 246, 0.10), transparent 60%),
+    radial-gradient(800px 520px at 100% 0%, rgba(20, 184, 166, 0.08), transparent 55%);
+}
+
+/* ── Glass tokens: DARK (primary target) ─────────────────────── */
+.dark {
+  --glass-bg: rgba(22, 24, 28, 0.55);
+  --glass-bg-strong: rgba(22, 24, 28, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-strong: rgba(255, 255, 255, 0.14);
+  --glass-highlight: rgba(255, 255, 255, 0.06);
+  --glass-shadow: 0 10px 36px rgba(0, 0, 0, 0.50), 0 2px 10px rgba(0, 0, 0, 0.35);
+  --glass-blur: 18px;
+  --glass-blur-sm: 12px;
+
+  --ambient:
+    radial-gradient(900px 520px at 10% -10%, rgba(79, 143, 247, 0.12), transparent 60%),
+    radial-gradient(820px 540px at 100% -4%, rgba(45, 212, 191, 0.09), transparent 55%);
+}
+
+/* ── Ambient app background (apply to the app shell root) ─────── */
+.app-ambient {
+  background-color: var(--background);
+  background-image: var(--ambient);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* ── Real frosted glass (upgrades the legacy .glass utility) ──── */
+.glass,
+.glass-panel {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+  border-radius: var(--radius-lg);
+}
+
+/* Stronger, more opaque glass for primary chrome (navbar, sidebar). */
+.glass-strong {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+/* Lighter glass for popovers/dropdowns/tooltips. */
+.glass-thin {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(140%);
+  backdrop-filter: blur(var(--glass-blur-sm)) saturate(140%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+}
+
+/* Subtle hover elevation — translate is tiny; respects reduced-motion. */
+.glass-hover {
+  transition: transform var(--transition-slow), box-shadow var(--transition-slow),
+    border-color var(--transition);
+}
+.glass-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glass-shadow), 0 14px 40px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 var(--glass-highlight);
+  border-color: var(--glass-border-strong);
+}
+
+/* Graceful fallback where backdrop-filter is unsupported. */
+@supports not ((-webkit-backdrop-filter: blur(2px)) or (backdrop-filter: blur(2px))) {
+  .glass, .glass-panel, .glass-strong, .glass-thin {
+    background: var(--card);
+    border-color: var(--border);
+  }
+}
+
+/* ============================================================
+   ACCESSIBILITY PREFERENCE CLASSES (toggled on <html> by JS)
+   These let the in-app Accessibility settings have REAL effect
+   without touching any component markup or layout.
+   ============================================================ */
+
+/* High contrast — strengthen text/border tokens. */
+.high-contrast {
+  --text-secondary: var(--text);
+  --text-muted: #54555c;
+  --border: #b4b4b0;
+  --border-subtle: #c8c8c4;
+}
+.high-contrast.dark {
+  --text-secondary: #e6e6e9;
+  --text-muted: #b9bac0;
+  --border: #4a4b50;
+  --border-subtle: #3a3b40;
+}
+.high-contrast .glass,
+.high-contrast .glass-panel,
+.high-contrast .glass-strong,
+.high-contrast .glass-thin {
+  background: var(--card);            /* drop translucency for max legibility */
+  border-color: var(--border-strong);
+}
+
+/* Large text — scale the rem base; everything sized in rem follows. */
+.large-text { font-size: 18px; }
+
+/* Forced reduced motion via settings (mirrors the media query). */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}

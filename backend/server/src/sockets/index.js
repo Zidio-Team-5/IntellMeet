@@ -3,6 +3,7 @@ import { verifyToken } from "../utils/jwt.js";
 import { Meeting } from "../models/Meeting.js";
 import { Chat } from "../models/Chat.js";
 import { logger } from "../utils/logger.js";
+import { setIO } from "./registry.js";
 
 /**
  * Socket gateway adapted to the LOCKED frontend event vocabulary:
@@ -18,6 +19,8 @@ export const initSockets = (server, allowedOrigins) => {
   });
 
   // JWT handshake — reject any socket without a valid token.
+  setIO(io);
+
   io.use((socket, next) => {
     const token = socket.handshake.auth?.token;
     if (!token) return next(new Error("Authentication required."));
@@ -32,6 +35,7 @@ export const initSockets = (server, allowedOrigins) => {
   io.on("connection", (socket) => {
     const { userId, name, email } = socket.user;
     logger.info(`Socket connected: ${email} (${socket.id})`);
+    if (userId) socket.join(`user:${userId}`); // enables targeted notifications
 
     const resolveRoom = async (meetingId) =>
       (await Meeting.findOne({ roomId: meetingId })) ||

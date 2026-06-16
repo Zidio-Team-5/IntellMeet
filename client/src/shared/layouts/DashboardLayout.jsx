@@ -25,7 +25,7 @@ export default function DashboardLayout({ children }) {
   }, [drawerOpen]);
 
   return (
-    <div className="flex min-h-screen bg-[var(--background)] text-[var(--text)]">
+    <div className="app-ambient flex min-h-screen text-[var(--text)]">
       {/* Desktop sidebar */}
       <aside className="sticky top-0 hidden h-screen flex-shrink-0 lg:flex">
         <Sidebar />

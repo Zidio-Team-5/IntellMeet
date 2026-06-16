@@ -41,7 +41,7 @@ export default function Sidebar({ onNavigate }) {
   };
 
   return (
-    <div className="flex h-full w-60 flex-col border-r border-[var(--border)] bg-[var(--bg-surface)]">
+    <div className="glass-strong flex h-full w-60 flex-col border-r border-[var(--border)]">
       {/* Brand */}
       <div className="flex h-12 items-center px-4">
         <Logo />
