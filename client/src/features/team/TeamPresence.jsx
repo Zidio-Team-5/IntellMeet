@@ -1,22 +1,27 @@
+import { useQuery } from "@tanstack/react-query";
 import { initials, avatarColor } from "../../shared/utils/formatters.js";
 import Card from "../../shared/ui/Card.jsx";
+import { getTeamPresence } from "../../services/teamService.js";
 
 const ONLINE = [
   { name: "Alex Chen" }, { name: "Sarah Park" }, { name: "Ananya Singh" }, { name: "Priya Patel" },
 ];
 
 export default function TeamPresence() {
+  const { data } = useQuery({ queryKey: ["team-presence"], queryFn: getTeamPresence });
+  const online = data?.members ?? ONLINE;
+
   return (
     <Card>
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-display text-sm font-semibold text-[var(--text)]">Online Now</h3>
         <span className="flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full bg-green-500" />
-          <span className="text-xs text-[var(--text-muted)]">{ONLINE.length} active</span>
+          <span className="text-xs text-[var(--text-muted)]">{online.length} active</span>
         </span>
       </div>
       <div className="flex flex-wrap gap-2">
-        {ONLINE.map((m) => (
+        {online.map((m) => (
           <div key={m.name} title={m.name} className="relative">
             <div
               className="flex h-9 w-9 items-center justify-center rounded-xl text-xs font-bold text-white"

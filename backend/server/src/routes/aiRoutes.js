@@ -1,0 +1,12 @@
+import { Router } from "express";
+import * as c from "../controllers/aiController.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
+const r = Router();
+r.use(authMiddleware);
+r.post("/summary", c.summary);
+r.post("/action-items", c.actionItems);
+r.post("/chat", c.chat);
+r.post("/search", c.search);
+r.get("/templates", c.templates);
+r.get("/history", c.history);
+export default r;

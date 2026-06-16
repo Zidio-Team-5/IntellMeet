@@ -1,5 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import Card from "../../shared/ui/Card.jsx";
 import { initials, avatarColor } from "../../shared/utils/formatters.js";
+import { getTeamWorkload } from "../../services/teamService.js";
 
 const WORKLOAD = [
   { name: "Alex Chen",    tasks: 8,  capacity: 10, meetings: 5 },
@@ -10,13 +12,21 @@ const WORKLOAD = [
 ];
 
 export default function TeamWorkload() {
+  const { data } = useQuery({ queryKey: ["team-workload"], queryFn: getTeamWorkload });
+  const workload = (data?.workload ?? WORKLOAD).map((m) => ({
+    name: m.name,
+    tasks: m.tasks ?? m.openTasks ?? 0,
+    capacity: m.capacity ?? 10,
+    meetings: m.meetings ?? 0,
+  }));
+
   return (
     <Card padding="">
       <div className="border-b border-[var(--border)] px-5 py-4">
         <h3 className="font-display text-sm font-semibold text-[var(--text)]">Team Workload</h3>
       </div>
       <div className="divide-y divide-[var(--border)]">
-        {WORKLOAD.map((m) => {
+        {workload.map((m) => {
           const pct = Math.round((m.tasks / m.capacity) * 100);
           const color = pct >= 90 ? "#e63946" : pct >= 70 ? "#e9c46a" : "#2a9d8f";
           return (

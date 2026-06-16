@@ -1,0 +1,11 @@
+import { Router } from "express";
+import * as c from "../controllers/analyticsController.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
+const r = Router();
+r.use(authMiddleware);
+r.get("/overview", c.overview);
+r.get("/productivity", c.productivity);
+r.get("/team-performance", c.teamPerformance);
+r.get("/meeting-insights", c.meetingInsights);
+r.get("/knowledge", c.knowledge);
+export default r;

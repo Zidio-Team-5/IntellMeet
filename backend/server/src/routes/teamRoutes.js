@@ -1,0 +1,10 @@
+import { Router } from "express";
+import * as c from "../controllers/teamController.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
+const r = Router();
+r.use(authMiddleware);
+r.get("/", c.list);
+r.get("/workload", c.workload);
+r.get("/presence", c.presence);
+r.get("/collaboration", c.collaboration);
+export default r;

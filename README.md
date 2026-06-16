@@ -1,63 +1,46 @@
 # 🚀 IntellMeet
 
-AI-Powered Meeting & Collaboration Platform
+AI-Powered Meeting & Collaboration Platform.
 
 ## 📌 Overview
-
-IntellMeet is a full-stack web application that combines real-time video meetings, team collaboration, and AI-powered productivity features into a single platform.
-
-The goal is to help teams conduct meetings more effectively by providing video conferencing, real-time communication, meeting summaries, action item extraction, and task management.
-
-## ✨ Core Features
-
-- User Authentication
-- Meeting Creation & Joining
-- Real-Time Video Conferencing
-- Real-Time Chat
-- Screen Sharing
-- AI Meeting Summaries
-- Action Item Extraction
-- Task Management
-- Meeting History
+IntellMeet combines real-time meetings, team collaboration, and AI-powered
+productivity (summaries, action items, task management) in one platform.
 
 ## 🛠️ Tech Stack
-
-### Frontend
-- React
-- Vite
-- Tailwind CSS
-
-### Backend
-- Node.js
-- Express.js
-
-### Database
-- MongoDB Atlas
-
-### Real-Time Communication
-- Socket.io
-- WebRTC
-
-### AI
-- Hugging Face API / Groq API
-
-### Deployment
-- Vercel
-- Render
+- **Frontend:** React, Vite, Tailwind CSS, TanStack Query, Zustand, Socket.io-client
+- **Backend:** Node.js, Express, Mongoose, Socket.io
+- **Database:** MongoDB Atlas
+- **AI:** Google Gemini (optional; simulated output without a key)
+- **Deployment:** Vercel (frontend) · Render (backend)
 
 ## 📂 Repository Structure
-
 ```txt
-client/
-server/
-docs/
+client/    # React + Vite frontend (port 3000 in dev)
+backend/   # Express API + Socket.io (port 5000)
+docs/      # Setup, testing, deployment guides
 ```
 
-## 👥 Team
+## ⚡ Quick Start
+```bash
+# Backend
+cd backend && cp .env.example .env   # fill MONGO_URI + JWT_SECRET
+npm install && npm run seed && npm run dev
 
+# Frontend (new terminal)
+cd client && npm install && npm run dev
+```
+Open http://localhost:3000 and log in with the seeded admin:
+`alice@intellmeet.test` / `password123`.
+
+See `docs/SETUP_TESTING_DEPLOYMENT.md` for full setup, testing, Git workflow,
+and Render/Vercel deployment instructions.
+
+## ✨ Core Features
+User auth · Meeting create/join · Real-time chat & presence · AI summaries &
+action items · Task management (Kanban) · Dashboard, Analytics, Team,
+Notifications, Search.
+
+## 👥 Team
 Developed as part of the Zidio Web Development Internship Program.
 
-## 📅 Development Status
-
-🚧 Currently in Development
-
+s

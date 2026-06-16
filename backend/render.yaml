@@ -1,0 +1,28 @@
+# Render Blueprint for the IntellMeet backend (API + Socket.io).
+# Deploy: New > Blueprint > point at this repo. Set secret env vars in the dashboard.
+services:
+  - type: web
+    name: intellmeet-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_TTL
+        value: 7d
+      - key: MONGO_URI
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.0-flash

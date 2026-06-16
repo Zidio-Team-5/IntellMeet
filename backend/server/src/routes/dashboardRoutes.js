@@ -1,0 +1,10 @@
+import { Router } from "express";
+import * as c from "../controllers/dashboardController.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
+const r = Router();
+r.use(authMiddleware);
+r.get("/stats", c.stats);
+r.get("/activity", c.activity);
+r.get("/insights", c.insights);
+r.get("/upcoming", c.upcoming);
+export default r;

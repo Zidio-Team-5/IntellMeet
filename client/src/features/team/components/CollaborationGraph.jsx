@@ -1,19 +1,37 @@
+import { useQuery } from "@tanstack/react-query";
 import Card from "../../../shared/ui/Card.jsx";
+import { getCollaborationGraph } from "../../../services/teamService.js";
+
+const FALLBACK_NODES = [
+  { id: "eng",  label: "Engineering", x: 200, y: 120, size: 32, color: "#457b9d" },
+  { id: "prod", label: "Product",     x: 380, y: 80,  size: 26, color: "#2a9d8f" },
+  { id: "des",  label: "Design",      x: 320, y: 220, size: 22, color: "#6d6875" },
+  { id: "mkt",  label: "Marketing",   x: 120, y: 220, size: 18, color: "#e9c46a" },
+];
+const FALLBACK_EDGES = [
+  { from: "eng", to: "prod", weight: 8 },
+  { from: "eng", to: "des",  weight: 5 },
+  { from: "prod", to: "des", weight: 6 },
+  { from: "prod", to: "mkt", weight: 3 },
+  { from: "eng", to: "mkt",  weight: 2 },
+];
 
 export default function CollaborationGraph() {
-  const nodes = [
-    { id: "eng",  label: "Engineering", x: 200, y: 120, size: 32, color: "#457b9d" },
-    { id: "prod", label: "Product",     x: 380, y: 80,  size: 26, color: "#2a9d8f" },
-    { id: "des",  label: "Design",      x: 320, y: 220, size: 22, color: "#6d6875" },
-    { id: "mkt",  label: "Marketing",   x: 120, y: 220, size: 18, color: "#e9c46a" },
-  ];
-  const edges = [
-    { from: "eng", to: "prod", weight: 8 },
-    { from: "eng", to: "des",  weight: 5 },
-    { from: "prod", to: "des", weight: 6 },
-    { from: "prod", to: "mkt", weight: 3 },
-    { from: "eng", to: "mkt",  weight: 2 },
-  ];
+  const { data } = useQuery({ queryKey: ["team-collaboration"], queryFn: getCollaborationGraph });
+
+  // The approved SVG draws nodes from x/y/size/color and weights edges by `weight`.
+  // Use backend data only when it carries those presentation fields, so the
+  // approved layout renders unchanged until the API supplies coordinate-bearing nodes.
+  const apiNodes = data?.nodes;
+  const apiEdges = data?.edges;
+  const nodes =
+    Array.isArray(apiNodes) && apiNodes.length > 0 && apiNodes.every((n) => typeof n.x === "number")
+      ? apiNodes
+      : FALLBACK_NODES;
+  const edges =
+    nodes === apiNodes && Array.isArray(apiEdges) && apiEdges.every((e) => typeof e.weight === "number")
+      ? apiEdges
+      : FALLBACK_EDGES;
 
   const getNode = (id) => nodes.find((n) => n.id === id);
 
