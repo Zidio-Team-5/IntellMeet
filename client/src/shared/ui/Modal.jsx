@@ -23,11 +23,17 @@ export default function Modal({
   className = "",
 }) {
   const panelRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
 
+  // Focus the panel ONCE when it opens and lock body scroll. Crucially this
+  // effect depends only on `isOpen` (not `onClose`) — otherwise a parent that
+  // passes a fresh onClose on every render would re-run this on each keystroke
+  // and yank focus out of inputs. Escape uses the ref so it's always current.
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (e) => {
-      if (e.key === "Escape") onClose?.();
+      if (e.key === "Escape") onCloseRef.current?.();
     };
     document.addEventListener("keydown", onKey);
     const prevOverflow = document.body.style.overflow;
@@ -37,7 +43,7 @@ export default function Modal({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Card from "../../shared/ui/Card.jsx";
 import Button from "../../shared/ui/Button.jsx";
 import { joinMeeting } from "../../services/meetingService.js";
+import { toast } from "../../core/store/toastStore.js";
+import { extractMeetingId } from "../../shared/utils/meeting.js";
 
 export default function JoinMeetingCard() {
   const [meetingId, setMeetingId] = useState("");
@@ -10,13 +12,18 @@ export default function JoinMeetingCard() {
   const navigate = useNavigate();
 
   const handleJoin = async () => {
-    if (!meetingId.trim()) return;
+    const id = extractMeetingId(meetingId);
+    if (!id) {
+      toast({ type: "warning", title: "Enter a meeting", message: "Paste a meeting ID or invite link." });
+      return;
+    }
     setLoading(true);
     try {
-      await joinMeeting(meetingId.trim());
-      navigate(`/meeting/${meetingId.trim()}`);
+      await joinMeeting(id);
+      navigate(`/meeting/${id}`);
     } catch (err) {
-      console.error(err);
+      const message = err?.response?.data?.message || "Could not join that meeting. Check the ID or link.";
+      toast({ type: "error", title: "Unable to join", message });
     } finally {
       setLoading(false);
     }

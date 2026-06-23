@@ -45,6 +45,8 @@ const run = async () => {
   }
   const alice = userIds["alice@intellmeet.test"];
   const bob = userIds["bob@intellmeet.test"];
+  const carol = userIds["carol@intellmeet.test"];
+  const member = (id, name, email, role = "member") => ({ userId: id, name, email, role });
 
   // --- Reset sample meetings/tasks/notifications hosted by Alice ---
   await Meeting.deleteMany({ host: alice });
@@ -53,12 +55,22 @@ const run = async () => {
 
   const m1 = await Meeting.create({
     title: "Q3 Roadmap Planning",
+    description: "Lock the Q3 priorities and owners.",
     roomId: "qcr-pla-nng",
     host: alice,
+    creator: alice,
+    members: [
+      member(alice, "Alice Admin", "alice@intellmeet.test", "host"),
+      member(bob, "Bob Builder", "bob@intellmeet.test"),
+    ],
     participants: [
       { userId: alice, name: "Alice Admin", email: "alice@intellmeet.test", joinedAt: new Date() },
       { userId: bob, name: "Bob Builder", email: "bob@intellmeet.test", joinedAt: new Date() },
     ],
+    invitedUsers: [],
+    visibility: "invite",
+    status: "completed",
+    duration: 60,
     transcript: [
       { senderName: "Alice Admin", message: "Let's lock the Q3 priorities today.", timestamp: new Date() },
       { senderName: "Bob Builder", message: "I'll own the auth hardening track.", timestamp: new Date() },
@@ -67,14 +79,45 @@ const run = async () => {
     isActive: false,
   });
 
+  // A LIVE meeting where Carol is INVITED but has not joined — demonstrates
+  // cross-user visibility (Carol sees it on her dashboard without joining).
   await Meeting.create({
     title: "Daily Standup",
+    description: "Quick sync.",
     roomId: "std-dly-now",
     host: alice,
+    creator: alice,
+    members: [member(alice, "Alice Admin", "alice@intellmeet.test", "host")],
     participants: [{ userId: alice, name: "Alice Admin", email: "alice@intellmeet.test", joinedAt: new Date() }],
+    invitedUsers: [{ userId: carol, name: "Carol Chen", email: "carol@intellmeet.test", status: "pending", invitedAt: new Date() }],
+    visibility: "invite",
+    status: "live",
+    duration: 15,
     transcript: [],
     summary: "",
     isActive: true,
+  });
+
+  // An UPCOMING (scheduled) meeting — populates the "Upcoming" filter/widget.
+  await Meeting.create({
+    title: "Sprint Review",
+    description: "Demo and retro.",
+    roomId: "spr-rev-iew",
+    host: alice,
+    creator: alice,
+    members: [
+      member(alice, "Alice Admin", "alice@intellmeet.test", "host"),
+      member(bob, "Bob Builder", "bob@intellmeet.test"),
+    ],
+    participants: [],
+    invitedUsers: [{ userId: bob, name: "Bob Builder", email: "bob@intellmeet.test", status: "pending", invitedAt: new Date() }],
+    visibility: "invite",
+    status: "upcoming",
+    scheduledAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    duration: 45,
+    transcript: [],
+    summary: "",
+    isActive: false,
   });
 
   await Task.create([
@@ -88,7 +131,7 @@ const run = async () => {
     { userId: alice, type: "task", message: "Bob moved 'Harden authentication' to In Progress.", read: false },
   ]);
 
-  logger.info(`Seeded: ${USERS.length} users, 2 meetings, 3 tasks, 2 notifications.`);
+  logger.info(`Seeded: ${USERS.length} users, 3 meetings, 3 tasks, 2 notifications.`);
   logger.info("Login with: alice@intellmeet.test / password123  (admin)");
   await mongoose.disconnect();
   process.exit(0);

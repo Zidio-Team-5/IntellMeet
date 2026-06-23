@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Video, Sparkles, ArrowRight } from "lucide-react";
+import { Video, Sparkles, ArrowRight, Pencil } from "lucide-react";
 import Table from "../../shared/ui/Table.jsx";
 import Badge from "../../shared/ui/Badge.jsx";
 import Button from "../../shared/ui/Button.jsx";
@@ -7,8 +7,11 @@ import MeetingCard from "./MeetingCard.jsx";
 import MeetingEmptyState from "./MeetingEmptyState.jsx";
 import { formatDate, formatTime, formatDuration } from "../../shared/utils/formatters.js";
 import { MEETING_STATUS, STATUS_COLORS } from "../../shared/utils/constants.js";
+import useAuthStore from "../../core/store/authStore.js";
+import { canManageMeeting } from "../../shared/utils/permissions.js";
 
-export default function MeetingList({ meetings = [], filter = "all" }) {
+export default function MeetingList({ meetings = [], filter = "all", onEdit }) {
+  const { user } = useAuthStore();
   const filtered = meetings.filter((m) => {
     if (filter === "all") return true;
     if (filter === "live") return m.status === "live";
@@ -74,11 +77,22 @@ export default function MeetingList({ meetings = [], filter = "all" }) {
                     {people || "—"}
                   </Table.Cell>
                   <Table.Cell align="right">
-                    <Link to={`/meeting/${id}`}>
-                      <Button size="xs" variant={isLive ? "primary" : "outline"} icon={ArrowRight}>
-                        {isLive ? "Join" : "Open"}
-                      </Button>
-                    </Link>
+                    <div className="flex items-center justify-end gap-2">
+                      {onEdit && status === "upcoming" && canManageMeeting(user, m) && (
+                        <Button size="xs" variant="ghost" icon={Pencil} onClick={() => onEdit(m)}>
+                          Edit
+                        </Button>
+                      )}
+                      {status === "completed" ? (
+                        <Button size="xs" variant="ghost" disabled>Ended</Button>
+                      ) : (
+                        <Link to={`/meeting/${id}`}>
+                          <Button size="xs" variant={isLive ? "primary" : "outline"} icon={ArrowRight}>
+                            Join now
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
                   </Table.Cell>
                 </Table.Row>
               );
@@ -90,7 +104,7 @@ export default function MeetingList({ meetings = [], filter = "all" }) {
       {/* Mobile: stacked cards */}
       <div className="space-y-2 md:hidden">
         {filtered.map((m) => (
-          <MeetingCard key={m._id || m.id} meeting={m} />
+          <MeetingCard key={m._id || m.id} meeting={m} onEdit={onEdit} />
         ))}
       </div>
     </div>

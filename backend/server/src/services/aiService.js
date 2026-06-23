@@ -41,7 +41,7 @@ export const summarize = async (transcript) => {
   try {
     const { Type } = await import("@google/genai");
     const r = await ai.models.generateContent({
-      model: MODEL,
+      model: getModel(),
       contents: `Summarize and extract action items:\n\n${transcript}`,
       config: {
         responseMimeType: "application/json",

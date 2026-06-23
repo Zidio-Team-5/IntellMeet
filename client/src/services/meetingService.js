@@ -21,6 +21,21 @@ export const createMeeting = async (payload) => {
   return res.data;
 };
 
+export const updateMeeting = async (id, payload) => {
+  const res = await api.patch(API_ENDPOINTS.MEETINGS.UPDATE(id), payload);
+  return res.data;
+};
+
+export const deleteMeeting = async (id) => {
+  const res = await api.delete(API_ENDPOINTS.MEETINGS.DELETE(id));
+  return res.data;
+};
+
+export const inviteToMeeting = async (id, invites) => {
+  const res = await api.post(API_ENDPOINTS.MEETINGS.INVITE(id), { invites });
+  return res.data;
+};
+
 export const joinMeeting = async (id) => {
   const res = await api.post(API_ENDPOINTS.MEETINGS.JOIN(id));
   return res.data;
@@ -38,5 +53,10 @@ export const endMeeting = async (id) => {
 
 export const getMeetingTranscript = async (id) => {
   const res = await api.get(API_ENDPOINTS.MEETINGS.TRANSCRIPT(id));
+  return res.data;
+};
+
+export const generateMeetingNotes = async (id) => {
+  const res = await api.post(API_ENDPOINTS.MEETINGS.SUMMARY(id));
   return res.data;
 };

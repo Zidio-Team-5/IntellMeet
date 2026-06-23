@@ -27,7 +27,8 @@ describe("Button", () => {
 
   it("applies correct variant class for primary", () => {
     render(<Button variant="primary">Primary</Button>);
-    expect(screen.getByRole("button").className).toContain("bg-[var(--primary)]");
+    // Primary uses the brand gradient (current design token).
+    expect(screen.getByRole("button").className).toContain("var(--gradient-brand)");
   });
 
   it("applies correct variant class for danger", () => {

@@ -1,16 +1,20 @@
 import { Link } from "react-router-dom";
-import { Video, Users, Clock, Sparkles, ArrowRight } from "lucide-react";
+import { Video, Users, Clock, Sparkles, ArrowRight, Pencil } from "lucide-react";
 import Card from "../../shared/ui/Card.jsx";
 import Button from "../../shared/ui/Button.jsx";
 import Badge from "../../shared/ui/Badge.jsx";
 import { formatDate, formatTime, formatDuration } from "../../shared/utils/formatters.js";
 import { MEETING_STATUS, STATUS_COLORS } from "../../shared/utils/constants.js";
+import useAuthStore from "../../core/store/authStore.js";
+import { canManageMeeting } from "../../shared/utils/permissions.js";
 
-export default function MeetingCard({ meeting }) {
+export default function MeetingCard({ meeting, onEdit }) {
+  const { user } = useAuthStore();
   const id = meeting._id || meeting.id;
   const status = meeting.status || MEETING_STATUS.UPCOMING;
   const statusStyle = STATUS_COLORS[status] || STATUS_COLORS.upcoming;
   const isLive = status === "live";
+  const canEdit = onEdit && status === "upcoming" && canManageMeeting(user, meeting);
   const people = meeting.participants?.length ?? meeting.participantCount;
 
   return (
@@ -60,11 +64,20 @@ export default function MeetingCard({ meeting }) {
             </div>
           </div>
         </div>
-        <Link to={`/meeting/${id}`} className="flex-shrink-0">
-          <Button size="sm" variant={isLive ? "primary" : "outline"} icon={ArrowRight}>
-            {isLive ? "Join" : "Open"}
-          </Button>
-        </Link>
+        <div className="flex flex-shrink-0 items-center gap-2">
+          {canEdit && (
+            <Button size="sm" variant="ghost" icon={Pencil} onClick={() => onEdit(meeting)} aria-label="Edit meeting" />
+          )}
+          {status === "completed" ? (
+            <Button size="sm" variant="ghost" disabled>Ended</Button>
+          ) : (
+            <Link to={`/meeting/${id}`}>
+              <Button size="sm" variant={isLive ? "primary" : "outline"} icon={ArrowRight}>
+                Join now
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
     </Card>
   );

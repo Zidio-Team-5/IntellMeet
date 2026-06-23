@@ -2,13 +2,15 @@ import { useState } from "react";
 import { Send, MessageSquare } from "lucide-react";
 import Card from "../../shared/ui/Card.jsx";
 import useMeetingChat from "../../shared/hooks/useMeetingChat.js";
+import useMeetingGateStore from "../../core/store/meetingGateStore.js";
 
 export default function ChatPanel({ meetingId }) {
   const [input, setInput] = useState("");
   const { messages, sendMessage } = useMeetingChat(meetingId);
+  const chatEnabled = useMeetingGateStore((s) => s.moderation.chatEnabled);
 
   const handleSend = () => {
-    if (!input.trim()) return;
+    if (!input.trim() || !chatEnabled) return;
     sendMessage(input);
     setInput("");
   };
@@ -43,14 +45,16 @@ export default function ChatPanel({ meetingId }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          placeholder="Type a message…"
+          placeholder={chatEnabled ? "Type a message…" : "Chat is disabled by the host"}
           aria-label="Chat message"
-          className="flex-1 rounded-md border border-[var(--border)] bg-[var(--muted)] px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] outline-none transition-colors focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/25"
+          disabled={!chatEnabled}
+          className="flex-1 rounded-md border border-[var(--border)] bg-[var(--muted)] px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] outline-none transition-colors focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/25 disabled:opacity-60"
         />
         <button
           onClick={handleSend}
           aria-label="Send message"
-          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-[var(--brand)] text-white transition-colors hover:bg-[var(--brand-hover)]"
+          disabled={!chatEnabled}
+          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-[var(--brand)] text-white transition-colors hover:bg-[var(--brand-hover)] disabled:opacity-50"
         >
           <Send size={14} />
         </button>

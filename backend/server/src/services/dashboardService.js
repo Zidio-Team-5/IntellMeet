@@ -2,7 +2,13 @@ import { Meeting } from "../models/Meeting.js";
 import { Task } from "../models/Task.js";
 import { User } from "../models/User.js";
 
-const mine = (m, uid) => m.host === uid || (m.participants || []).some((p) => p.userId === uid);
+const mine = (m, uid) =>
+  String(m.host) === String(uid) ||
+  String(m.creator) === String(uid) ||
+  m.visibility === "public" ||
+  (m.members || []).some((x) => String(x.userId) === String(uid)) ||
+  (m.participants || []).some((p) => String(p.userId) === String(uid)) ||
+  (m.invitedUsers || []).some((i) => String(i.userId) === String(uid));
 
 export const stats = async (uid) => {
   const meetings = (await Meeting.find({})).filter((m) => mine(m, uid));
@@ -42,9 +48,18 @@ export const insights = async (uid) => {
 };
 
 export const upcoming = async (uid) => {
-  const meetings = (await Meeting.find({})).filter((m) => mine(m, uid) && m.isActive).slice(0, 5);
+  const all = (await Meeting.find({})).filter((m) => mine(m, uid));
+  // Prefer genuinely-upcoming (scheduled future) meetings; fall back to any
+  // active meeting so the widget is never empty when meetings exist.
+  const now = Date.now();
+  const scheduled = all.filter(
+    (m) => m.status === "upcoming" || (m.scheduledAt && new Date(m.scheduledAt).getTime() > now)
+  );
+  const pool = (scheduled.length ? scheduled : all.filter((m) => m.isActive))
+    .sort((a, b) => new Date(a.scheduledAt || a.createdAt || 0) - new Date(b.scheduledAt || b.createdAt || 0))
+    .slice(0, 5);
   // UpcomingMeetings reads: _id, title, scheduledAt, duration
-  return { meetings: meetings.map((m) => ({
-    _id: String(m._id), title: m.title, scheduledAt: m.createdAt, duration: 30,
+  return { meetings: pool.map((m) => ({
+    _id: String(m._id), title: m.title, scheduledAt: m.scheduledAt || m.createdAt, duration: m.duration || 30,
   })) };
 };

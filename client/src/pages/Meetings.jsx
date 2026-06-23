@@ -14,6 +14,7 @@ import { getMeetings } from "../services/meetingService.js";
 
 export default function Meetings() {
   const [openCreate, setOpenCreate] = useState(false);
+  const [editMeeting, setEditMeeting] = useState(null);
   const [filter, setFilter] = useState("all");
   const { data, isLoading } = useQuery({ queryKey: ["meetings"], queryFn: getMeetings });
   const meetings = data?.meetings ?? data ?? [];
@@ -36,7 +37,7 @@ export default function Meetings() {
         <div className="lg:col-span-2">
           <MeetingFilters active={filter} onChange={setFilter} />
           <div className="mt-4">
-            {isLoading ? <TableSkeleton rows={6} cols={5} /> : <MeetingList meetings={meetings} filter={filter} />}
+            {isLoading ? <TableSkeleton rows={6} cols={5} /> : <MeetingList meetings={meetings} filter={filter} onEdit={setEditMeeting} />}
           </div>
         </div>
         <div>
@@ -45,6 +46,12 @@ export default function Meetings() {
       </div>
 
       <CreateMeetingModal isOpen={openCreate} onClose={() => setOpenCreate(false)} />
+      <CreateMeetingModal
+        key={editMeeting?._id || editMeeting?.id || "edit"}
+        isOpen={!!editMeeting}
+        meeting={editMeeting}
+        onClose={() => setEditMeeting(null)}
+      />
     </DashboardLayout>
   );
 }
