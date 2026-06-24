@@ -42,6 +42,7 @@ export default function MeetingRoom() {
   const { user } = useAuthStore();
   const { screenSharing } = useMediaStore();
   const gate = useMeetingGateStore((s) => s.gate);
+  const blockedReason = useMeetingGateStore((s) => s.blockedReason);
 
   // Unique people by user (defends against any transient duplicate roster rows).
   const uniqueRemote = [];
@@ -91,7 +92,7 @@ export default function MeetingRoom() {
   // show the waiting room instead of the meeting. The hooks above stay mounted
   // so the socket gating keeps working.
   if (gate !== "admitted") {
-    return <WaitingRoom gate={gate} title={meeting?.title} />;
+    return <WaitingRoom gate={gate} title={meeting?.title} reason={blockedReason} />;
   }
 
   return (

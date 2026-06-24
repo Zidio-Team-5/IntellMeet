@@ -1,17 +1,21 @@
 import { useNavigate } from "react-router-dom";
-import { Loader2, ShieldX, DoorClosed, Clock } from "lucide-react";
+import { Loader2, ShieldX, DoorClosed, Clock, WifiOff } from "lucide-react";
 import Button from "../../shared/ui/Button.jsx";
 
 // Full-screen gate shown to a participant until the host admits them, or when
-// entry is blocked (meeting completed, denied, removed, or ended).
-export default function WaitingRoom({ gate, title }) {
+// entry is blocked (meeting completed, denied, removed, ended, or unreachable).
+export default function WaitingRoom({ gate, title, reason }) {
   const navigate = useNavigate();
+
+  const blocked = reason === "connection"
+    ? { icon: WifiOff, spin: false, heading: "Can't connect", body: "We couldn't reach the meeting server. Check your connection and try again.", showBack: true }
+    : { icon: DoorClosed, spin: false, heading: "Meeting unavailable", body: "This meeting has ended and can no longer be joined.", showBack: true };
 
   const config = {
     joining: { icon: Loader2, spin: true, heading: "Joining…", body: "Connecting you to the meeting.", showBack: false },
     waiting: { icon: Clock, spin: false, heading: "Waiting for the host", body: `You're in the waiting room for "${title || "this meeting"}". The host will let you in shortly.`, showBack: true },
     denied: { icon: ShieldX, spin: false, heading: "Not admitted", body: "The host declined your request to join.", showBack: true },
-    blocked: { icon: DoorClosed, spin: false, heading: "Meeting unavailable", body: "This meeting has ended and can no longer be joined.", showBack: true },
+    blocked,
     removed: { icon: ShieldX, spin: false, heading: "Removed", body: "You were removed from the meeting by the host.", showBack: true },
     ended: { icon: DoorClosed, spin: false, heading: "Meeting ended", body: "The host has ended this meeting.", showBack: true },
   }[gate] || {};

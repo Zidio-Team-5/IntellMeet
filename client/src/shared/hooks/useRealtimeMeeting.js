@@ -26,7 +26,29 @@ export default function useRealtimeMeeting(meetingId) {
     if (!meetingId || !token) return;
     const socket = connectSocket(token);
     setGate("joining");
-    socket.emit("meeting:join", { meetingId });
+
+    // Emit the join now AND on every (re)connect. If the socket isn't connected
+    // yet (or drops and comes back), this guarantees the server still receives
+    // the join and the admission gate resolves instead of hanging on "Joining…".
+    const doJoin = () => socket.emit("meeting:join", { meetingId });
+    doJoin();
+    socket.on("connect", doJoin);
+
+    // Safety net: if we can't establish a connection at all, don't trap the user
+    // on the spinner forever — surface the problem with an escape route.
+    let warned = false;
+    const onConnError = () => {
+      if (!warned) {
+        warned = true;
+        toast({ type: "error", title: "Connection problem", message: "Can't reach the meeting server. Retrying…" });
+      }
+    };
+    socket.on("connect_error", onConnError);
+    const stuckTimer = setTimeout(() => {
+      if (useMeetingGateStore.getState().gate === "joining" && !socket.connected) {
+        setGate("blocked", "connection");
+      }
+    }, 15000);
 
     // --- admission gating ---
     const onRoster = (list) => { setParticipants(list || []); setGate("admitted"); };
@@ -81,6 +103,9 @@ export default function useRealtimeMeeting(meetingId) {
 
     return () => {
       socket.emit("meeting:leave", { meetingId });
+      clearTimeout(stuckTimer);
+      socket.off("connect", doJoin);
+      socket.off("connect_error", onConnError);
       socket.off("meeting:participants", onRoster);
       socket.off("meeting:waiting-room", onWaitingRoom);
       socket.off("meeting:admitted", onAdmitted);

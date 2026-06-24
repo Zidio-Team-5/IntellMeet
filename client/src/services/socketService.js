@@ -4,14 +4,23 @@ import { socketUrl } from "../shared/utils/environment.js";
 let socket = null;
 
 export const connectSocket = (token) => {
-  if (socket?.connected) return socket;
+  // Reuse the existing singleton (even if mid-connect) so we never spawn a
+  // second socket with its own listeners.
+  if (socket) {
+    if (!socket.connected && !socket.active) socket.connect();
+    return socket;
+  }
 
   socket = io(socketUrl, {
     auth: { token },
-    transports: ["websocket"],
+    // Allow the polling fallback: many hosting proxies (Render, etc.) reject a
+    // WebSocket-only handshake, which would otherwise leave the client stuck
+    // "connecting" forever. Socket.IO upgrades to WebSocket when possible.
+    transports: ["websocket", "polling"],
     reconnection: true,
-    reconnectionAttempts: 5,
+    reconnectionAttempts: 10,
     reconnectionDelay: 1000,
+    timeout: 10000,
   });
 
   return socket;
