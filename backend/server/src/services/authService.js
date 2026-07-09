@@ -13,6 +13,15 @@ export const publicUser = (u) => ({
   avatar: u.avatar || "",
   role: u.role || "member",
   department: u.department || "",
+  jobTitle: u.jobTitle || "",
+  phone: u.phone || "",
+  bio: u.bio || "",
+  location: u.location || "",
+  timezone: u.timezone || "",
+  skills: u.skills || [],
+  socialLinks: u.socialLinks || {},
+  manager: u.manager || "",
+  startDate: u.startDate || null,
   settings: u.settings || {},
   stats: u.stats || {},
   isVerified: !!u.isVerified,
@@ -134,7 +143,11 @@ export const resetPassword = async ({ email, code, password }) => {
 export const login = async ({ email, password }) => {
   const normEmail = String(email || "").toLowerCase().trim();
   const user = await User.findOne({ email: normEmail });
-  if (!user) throw badRequest("Invalid email or password.");
+  if (!user) {
+    const e = new Error("No account found with this email.");
+    e.status = 404; e.code = "NO_ACCOUNT";
+    throw e;
+  }
 
   // Back-compat: accounts created before this OTP flow existed have a real
   // password hash but no hasPassword/isVerified flags set. Self-heal them on
@@ -143,7 +156,11 @@ export const login = async ({ email, password }) => {
   if (!user.hasPassword && !legacyAccount) throw badRequest("Please finish signup - verify your email and set a password.");
 
   const match = await bcrypt.compare(password, user.password || "");
-  if (!match) throw badRequest("Invalid email or password.");
+  if (!match) {
+    const e = new Error("Incorrect password.");
+    e.status = 401; e.code = "WRONG_PASSWORD";
+    throw e;
+  }
 
   if (legacyAccount) {
     user.hasPassword = true;
@@ -161,7 +178,12 @@ export const profile = async (userId) => {
 
 export const updateProfile = async (userId, body) => {
   const updates = {};
-  ["name", "avatar", "department"].forEach((k) => { if (body[k] !== undefined) updates[k] = body[k]; });
+  ["name", "avatar", "department", "jobTitle", "phone", "bio", "location", "timezone", "manager"].forEach((k) => {
+    if (body[k] !== undefined) updates[k] = body[k];
+  });
+  if (body.skills !== undefined) updates.skills = Array.isArray(body.skills) ? body.skills : String(body.skills).split(",").map((s) => s.trim()).filter(Boolean);
+  if (body.socialLinks !== undefined) updates.socialLinks = { ...body.socialLinks };
+  if (body.startDate !== undefined) updates.startDate = body.startDate;
   if (body.password) updates.password = await bcrypt.hash(body.password, 10);
   const user = await User.findByIdAndUpdate(userId, updates, { new: true });
   return publicUser(user);

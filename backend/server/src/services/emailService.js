@@ -24,7 +24,7 @@ const buildTransport = () => {
   const user = process.env.EMAIL_USER;
   const pass = process.env.EMAIL_PASS;
   if (!user || !pass) {
-    logger.warn("EMAIL_USER/EMAIL_PASS not set — emails will be skipped (logged only).");
+    logger.error("EMAIL_USER/EMAIL_PASS not set on this server — all emails (OTP, invites, task/role notifications) are being skipped. Set them in Render's Environment tab.");
     return null;
   }
   try {
@@ -58,7 +58,7 @@ const wrap = (title, bodyHtml) => `
 export const sendMail = async ({ to, subject, html }) => {
   const t = getTransporter();
   if (!t) {
-    logger.warn(`Email skipped (not configured): to=${to} subject="${subject}"`);
+    logger.error(`Email NOT sent (EMAIL_USER/EMAIL_PASS missing): to=${to} subject="${subject}"`);
     return false;
   }
   try {

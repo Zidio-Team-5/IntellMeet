@@ -53,10 +53,12 @@ export const teamPerformance = async () => {
   const meetings = await Meeting.find({});
   const byAssignee = {};
   tasks.forEach((t) => {
-    const k = t.assignee || "Unassigned";
-    byAssignee[k] = byAssignee[k] || { name: k, tasksTotal: 0, tasksDone: 0, meetings: 0 };
-    byAssignee[k].tasksTotal += 1;
-    if (t.status === "completed") byAssignee[k].tasksDone += 1;
+    const names = t.assignees?.length ? t.assignees : (t.assignee ? [t.assignee] : ["Unassigned"]);
+    names.forEach((k) => {
+      byAssignee[k] = byAssignee[k] || { name: k, tasksTotal: 0, tasksDone: 0, meetings: 0 };
+      byAssignee[k].tasksTotal += 1;
+      if (t.status === "completed") byAssignee[k].tasksDone += 1;
+    });
   });
   meetings.forEach((m) => {
     (m.participants || []).forEach((p) => {

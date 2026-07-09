@@ -9,6 +9,10 @@ const member = (u) => ({
   name: u.name, email: u.email, role: u.role || "member",
   department: u.department || "", isOnline: false, avatar: u.avatar || "",
   isVerified: !!u.isVerified, hasPassword: !!u.hasPassword,
+  jobTitle: u.jobTitle || "", phone: u.phone || "", bio: u.bio || "",
+  location: u.location || "", timezone: u.timezone || "", skills: u.skills || [],
+  socialLinks: u.socialLinks || {}, startDate: u.startDate || null,
+  createdAt: u.createdAt,
 });
 
 const notFound = () => { const e = new Error("Member not found."); e.status = 404; return e; };
@@ -20,7 +24,10 @@ export const workload = async () => {
   const users = await User.find({});
   const tasks = await Task.find({});
   return { workload: users.map((u) => ({
-    ...member(u), openTasks: tasks.filter((t) => t.assignee === u.name && t.status !== "completed").length,
+    ...member(u), openTasks: tasks.filter((t) => {
+      const names = t.assignees?.length ? t.assignees : (t.assignee ? [t.assignee] : []);
+      return names.includes(u.name) && t.status !== "completed";
+    }).length,
   })) };
 };
 
@@ -29,8 +36,12 @@ export const presence = async () => ({ members: (await User.find({})).map((u) =>
 export const collaboration = async () => {
   const tasks = await Task.find({});
   const groups = {};
-  tasks.forEach((t) => { if (t.meetingId) { groups[t.meetingId] = groups[t.meetingId] || new Set(); groups[t.meetingId].add(t.assignee); } });
-  return { nodes: [...new Set(tasks.map((t) => t.assignee).filter(Boolean))].map((n) => ({ id: n, label: n })),
+  tasks.forEach((t) => {
+    const names = t.assignees?.length ? t.assignees : (t.assignee ? [t.assignee] : []);
+    if (t.meetingId) { groups[t.meetingId] = groups[t.meetingId] || new Set(); names.forEach((n) => groups[t.meetingId].add(n)); }
+  });
+  const allNames = new Set(tasks.flatMap((t) => (t.assignees?.length ? t.assignees : (t.assignee ? [t.assignee] : []))));
+  return { nodes: [...allNames].map((n) => ({ id: n, label: n })),
            edges: Object.values(groups).flatMap((s) => { const a = [...s]; return a.length > 1 ? [{ from: a[0], to: a[1] }] : []; }) };
 };
 

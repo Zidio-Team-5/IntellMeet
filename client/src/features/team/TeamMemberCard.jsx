@@ -1,11 +1,15 @@
 import { initials, avatarColor } from "../../shared/utils/formatters.js";
 import { Mail, ExternalLink } from "lucide-react";
 
-export default function TeamMemberCard({ member }) {
+export default function TeamMemberCard({ member, onClick }) {
   const isOnline = member.isOnline || member.status === "online";
 
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 hover:border-[var(--border-hover)] hover:shadow-[var(--shadow-sm)] transition-all">
+    <div
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      className="flex items-center gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 hover:border-[var(--border-hover)] hover:shadow-[var(--shadow-sm)] transition-all cursor-pointer"
+    >
       <div className="relative flex-shrink-0">
         <div
           className="flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-bold text-white"
@@ -29,6 +33,7 @@ export default function TeamMemberCard({ member }) {
         {member.email && (
           <a
             href={`mailto:${member.email}`}
+            onClick={(e) => e.stopPropagation()}
             className="rounded-lg p-1.5 text-[var(--text-muted)] hover:bg-[var(--muted)] hover:text-[var(--text)] transition-colors"
           >
             <Mail size={14} />

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import Button from "../../shared/ui/Button.jsx";
 import Input from "../../shared/ui/Input.jsx";
@@ -10,6 +10,18 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
   const loginMutation = useLoginMutation();
+  const navigate = useNavigate();
+
+  const errorCode = loginMutation.error?.response?.data?.code;
+  const errorMessage = loginMutation.error?.response?.data?.message;
+
+  // No account with this email — send them to signup instead of just erroring.
+  useEffect(() => {
+    if (errorCode === "NO_ACCOUNT") {
+      const t = setTimeout(() => navigate("/register", { state: { email: form.email } }), 1600);
+      return () => clearTimeout(t);
+    }
+  }, [errorCode, form.email, navigate]);
 
   const handleChange = (e) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -33,7 +45,9 @@ export default function LoginForm() {
 
         {loginMutation.isError && (
           <div className="mb-5 rounded-md border border-[var(--border)] bg-[var(--brand-subtle)] px-3 py-2.5 text-sm text-[var(--error)]">
-            {loginMutation.error?.response?.data?.message || "Invalid credentials. Please try again."}
+            {errorCode === "NO_ACCOUNT"
+              ? "No account with this email — taking you to sign up…"
+              : errorMessage || "Invalid credentials. Please try again."}
           </div>
         )}
 

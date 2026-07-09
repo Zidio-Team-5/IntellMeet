@@ -8,6 +8,27 @@ const UserSchema = new Schema(
     avatar: { type: String, default: "" },
     role: { type: String, enum: ["admin", "member"], default: "member" },
     department: { type: String, default: "" },
+    jobTitle: { type: String, default: "" },
+    phone: { type: String, default: "" },
+    bio: { type: String, default: "" },
+    location: { type: String, default: "" },
+    timezone: { type: String, default: "" },
+    skills: { type: [String], default: [] },
+    socialLinks: {
+      linkedin: { type: String, default: "" },
+      twitter: { type: String, default: "" },
+      github: { type: String, default: "" },
+      website: { type: String, default: "" },
+    },
+    manager: { type: String, default: "" }, // userId of this person's manager, if set
+    startDate: { type: Date },
+    googleDrive: {
+      connected: { type: Boolean, default: false },
+      accessToken: { type: String, default: "" },
+      refreshToken: { type: String, default: "" },
+      expiryDate: { type: Number, default: 0 },
+      email: { type: String, default: "" }, // which Google account is connected
+    },
     settings: { type: Object, default: {} },
     stats: { type: Object, default: {} },
 

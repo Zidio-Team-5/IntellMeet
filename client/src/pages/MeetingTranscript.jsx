@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Copy, Check, Sparkles, ArrowLeft, FileText } from "lucide-react";
+import { Copy, Check, Sparkles, ArrowLeft, FileText, Video, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import DashboardLayout from "../shared/layouts/DashboardLayout.jsx";
 import PageHeader from "../shared/ui/PageHeader.jsx";
@@ -55,6 +55,21 @@ export default function MeetingTranscript() {
           </Link>
         }
       />
+
+      {m.recordingUrl && (
+        <Card padding="" className="mb-5">
+          <div className="flex items-center justify-between px-5 py-3.5">
+            <div className="flex items-center gap-2">
+              <Video size={14} className="text-[var(--text-secondary)]" />
+              <h3 className="font-display text-sm font-semibold text-[var(--text)]">Recording</h3>
+              <span className="text-xs text-[var(--text-muted)]">Saved to Google Drive</span>
+            </div>
+            <a href={m.recordingUrl} target="_blank" rel="noopener noreferrer">
+              <Button size="sm" icon={ExternalLink}>Open recording</Button>
+            </a>
+          </div>
+        </Card>
+      )}
 
       <Card padding="">
         <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3.5">

@@ -11,5 +11,5 @@ export const errorMiddleware = (err, req, res, _next) => {
   const status = err.status || 500;
   // 4xx messages are meaningful to the client; only mask true 5xx in prod.
   const message = status >= 500 && process.env.NODE_ENV === "production" ? "Internal server error." : err.message || "Error";
-  return fail(res, message, status);
+  return fail(res, message, status, err.code ? { code: err.code } : {});
 };

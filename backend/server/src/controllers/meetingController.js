@@ -13,3 +13,14 @@ export const leave = async (req, res, next) => { try { ok(res, { meeting: await 
 export const end = async (req, res, next) => { try { ok(res, { meeting: await s.end(req.params.id, req.user.userId) }); } catch (e) { next(e); } };
 export const transcript = async (req, res, next) => { try { ok(res, { transcript: await s.transcript(req.params.id) }); } catch (e) { next(e); } };
 export const notes = async (req, res, next) => { try { ok(res, await s.generateNotes(req.params.id, req.user.userId)); } catch (e) { next(e); } };
+export const uploadRecording = async (req, res, next) => {
+  try {
+    if (!req.file) { const e = new Error("No recording file uploaded."); e.status = 400; throw e; }
+    const r = await s.saveRecording(req.params.id, req.user.userId, {
+      filename: `${req.params.id}-${Date.now()}.webm`,
+      mimeType: req.file.mimetype || "video/webm",
+      buffer: req.file.buffer,
+    });
+    ok(res, r);
+  } catch (e) { next(e); }
+};

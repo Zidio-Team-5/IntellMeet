@@ -14,6 +14,7 @@ import analyticsRoutes from "./routes/analyticsRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import searchRoutes from "./routes/searchRoutes.js";
 import teamRoutes from "./routes/teamRoutes.js";
+import driveRoutes from "./routes/driveRoutes.js";
 
 export const allowedOrigins = (process.env.CORS_ORIGINS || "http://localhost:3000,http://localhost:5173")
   .split(",").map((s) => s.trim()).filter(Boolean);
@@ -38,6 +39,7 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/team", teamRoutes);
+app.use("/api/drive", driveRoutes);
 
 app.all("/api/*", (req, res) => res.status(404).json({ message: `Not found: ${req.method} ${req.originalUrl}` }));
 app.use(errorMiddleware);

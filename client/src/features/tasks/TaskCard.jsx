@@ -21,10 +21,11 @@ export default function TaskCard({ task, onMove }) {
 
       <div className="mt-2 flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-3">
-          {task.assignee && (
-            <span className="flex items-center gap-1 truncate text-xs text-[var(--text-muted)]">
+          {(task.assignees?.length ? task.assignees : task.assignee ? [task.assignee] : []).length > 0 && (
+            <span className="flex min-w-0 items-center gap-1 truncate text-xs text-[var(--text-muted)]">
               <User size={11} />
-              {task.assignee?.name || task.assignee}
+              {(task.assignees?.length ? task.assignees : [task.assignee]).slice(0, 2).join(", ")}
+              {(task.assignees?.length || 0) > 2 && ` +${task.assignees.length - 2}`}
             </span>
           )}
           {task.dueDate && (

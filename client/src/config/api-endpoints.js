@@ -31,7 +31,13 @@ export const API_ENDPOINTS = {
     END: (id) => `/meetings/${id}/end`,
     TRANSCRIPT: (id) => `/meetings/${id}/transcript`,
     SUMMARY: (id) => `/meetings/${id}/summary`,
+    RECORDING: (id) => `/meetings/${id}/recording`,
     HISTORY: "/meetings/history",
+  },
+  DRIVE: {
+    CONNECT: "/drive/connect",
+    STATUS: "/drive/status",
+    DISCONNECT: "/drive/disconnect",
   },
   TASKS: {
     LIST: "/tasks",

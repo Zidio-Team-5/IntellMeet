@@ -58,6 +58,7 @@ export const serialize = (m) => {
     isRecording: status === "live" && !!m.isActive,
     isActive: !!m.isActive,
     summary: m.summary || "",
+    recordingUrl: m.recordingUrl || "",
     actionItems: m.actionItems || [],
     members: m.members || [],
     participants: m.participants || [],
@@ -350,6 +351,18 @@ const transcriptText = async (m) => {
     entries = chats.map((c) => ({ senderName: c.sender?.name, message: c.message }));
   }
   return entries.map((e) => `${e.senderName || e.sender || "Speaker"}: ${e.message || e.text || ""}`).join("\n");
+};
+
+// Upload a recording to the meeting host's connected Google Drive, store the
+// resulting shareable link on the meeting, and broadcast the update.
+export const saveRecording = async (idOrRoom, userId, { filename, mimeType, buffer }) => {
+  const m = await resolve(idOrRoom); if (!m) throw notFound();
+  if (userId && !isMember(m, userId)) throw forbidden("Only meeting members can upload a recording.");
+  const { uploadRecording } = await import("./driveService.js");
+  const { url } = await uploadRecording(userId, { filename, mimeType, buffer });
+  const updated = await Meeting.findByIdAndUpdate(m._id, { recordingUrl: url }, { new: true });
+  broadcastMeeting(updated, "meeting:updated");
+  return { recordingUrl: updated.recordingUrl, meeting: serialize(updated) };
 };
 
 // Generate AI meeting notes/minutes (summary + action items), persist them on

@@ -6,7 +6,9 @@ const TaskSchema = new Schema(
     meetingId: { type: String, default: "" },
     title: { type: String, required: true },
     description: { type: String, default: "" },
-    assignee: { type: String, default: "" },
+    assignee: { type: String, default: "" }, // back-compat: first assignee's name, kept in sync automatically
+    assignees: { type: [String], default: [] },     // all assignee names
+    assigneeIds: { type: [String], default: [] },   // all assignee userIds (for notify/email/analytics)
     priority: { type: String, enum: ["low", "medium", "high", "urgent"], default: "medium" },
     status: { type: String, enum: ["todo", "in_progress", "completed"], default: "todo" },
     dueDate: { type: Date },

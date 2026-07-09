@@ -60,3 +60,13 @@ export const generateMeetingNotes = async (id) => {
   const res = await api.post(API_ENDPOINTS.MEETINGS.SUMMARY(id));
   return res.data;
 };
+
+export const uploadMeetingRecording = async (id, blob) => {
+  const form = new FormData();
+  form.append("recording", blob, "recording.webm");
+  const res = await api.post(API_ENDPOINTS.MEETINGS.RECORDING(id), form, {
+    headers: { "Content-Type": "multipart/form-data" },
+    timeout: 120000, // recordings can take a while to upload
+  });
+  return res.data;
+};

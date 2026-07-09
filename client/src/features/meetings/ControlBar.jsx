@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Mic, MicOff, Video, VideoOff, MonitorUp, PhoneOff, Hand, ChevronUp } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, MonitorUp, PhoneOff, Hand, ChevronUp, Circle, Square } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useMediaStore from "../../core/store/mediaStore.js";
 import useMeetingGateStore from "../../core/store/meetingGateStore.js";
 import { getSocket } from "../../services/socketService.js";
 import { leaveMeeting, endMeeting } from "../../services/meetingService.js";
-import { toast } from "../../core/store/toastStore.js";
+import useMeetingRecording from "../../shared/hooks/useMeetingRecording.js";
 
 export default function ControlBar({ meetingId, isHost = false }) {
   const navigate = useNavigate();
@@ -15,18 +15,31 @@ export default function ControlBar({ meetingId, isHost = false }) {
     videoEnabled, toggleVideo,
     screenSharing, toggleScreenShare,
     handRaised, toggleHand,
-    isRecording,
+    isRecording, setIsRecording,
   } = useMediaStore();
   const { moderation } = useMeetingGateStore();
+  const recording = useMeetingRecording(meetingId);
+
+  const handleToggleRecording = async () => {
+    if (isRecording) {
+      setIsRecording(false);
+      await recording.stop();
+    } else {
+      recording.start();
+      setIsRecording(true);
+    }
+  };
 
   const goBack = () => navigate("/meetings");
 
   const handleLeaveOnly = async () => {
+    if (isRecording) { setIsRecording(false); await recording.stop(); }
     try { await leaveMeeting(meetingId); } catch { /* socket cleans up too */ }
     goBack();
   };
 
   const handleEndForAll = async () => {
+    if (isRecording) { setIsRecording(false); await recording.stop(); }
     const socket = getSocket();
     if (socket) socket.emit("meeting:end-all");
     try { await endMeeting(meetingId); } catch { /* best effort */ }
@@ -38,12 +51,10 @@ export default function ControlBar({ meetingId, isHost = false }) {
     goBack();
   };
 
+  const shareLocked = !screenSharing && moderation.screenShareLocked && !isHost;
+
   const handleShare = () => {
-    // Respect a host screen-share lock for non-hosts.
-    if (!screenSharing && moderation.screenShareLocked && !isHost) {
-      toast({ type: "warning", title: "Sharing locked", message: "The host has disabled screen sharing." });
-      return;
-    }
+    if (shareLocked) return; // button is disabled below; nothing to do
     toggleScreenShare();
   };
 
@@ -63,9 +74,15 @@ export default function ControlBar({ meetingId, isHost = false }) {
           <span className={label}>{videoEnabled ? "Stop" : "Start"}</span>
         </button>
 
-        <button onClick={handleShare} className={`${btn} ${screenSharing ? "bg-[var(--brand-subtle)] text-[var(--brand)]" : "text-[var(--text)]"}`} aria-label="Share screen">
+        <button
+          onClick={handleShare}
+          disabled={shareLocked}
+          title={shareLocked ? "The host has disabled screen sharing — ask them for permission" : undefined}
+          className={`${btn} ${screenSharing ? "bg-[var(--brand-subtle)] text-[var(--brand)]" : "text-[var(--text)]"} ${shareLocked ? "cursor-not-allowed opacity-40 hover:bg-transparent" : ""}`}
+          aria-label={shareLocked ? "Screen sharing disabled by host" : "Share screen"}
+        >
           <MonitorUp size={18} />
-          <span className={label}>{screenSharing ? "Stop share" : "Share"}</span>
+          <span className={label}>{screenSharing ? "Stop share" : shareLocked ? "Locked" : "Share"}</span>
         </button>
 
         <button onClick={toggleHand} className={`${btn} ${handRaised ? "bg-[var(--brand-subtle)] text-[var(--brand)]" : "text-[var(--text)]"}`} aria-pressed={handRaised} aria-label={handRaised ? "Lower hand" : "Raise hand"}>
@@ -73,11 +90,22 @@ export default function ControlBar({ meetingId, isHost = false }) {
           <span className={label}>{handRaised ? "Lower" : "Hand"}</span>
         </button>
 
-        {isRecording && (
-          <div className="flex items-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--live-subtle)] px-2.5 py-2">
-            <span className="live-badge h-2 w-2 rounded-full bg-[var(--live)]" />
-            <span className="text-xs font-medium text-[var(--live)]">REC</span>
-          </div>
+        {isHost && (
+          <button
+            onClick={handleToggleRecording}
+            disabled={recording.isUploading}
+            title={isRecording ? "Stop recording" : "Start recording"}
+            className={`flex items-center gap-1.5 rounded-md border px-2.5 py-2 transition-colors ${
+              isRecording
+                ? "border-[var(--border)] bg-[var(--live-subtle)] text-[var(--live)]"
+                : "border-[var(--border)] text-[var(--text)] hover:bg-[var(--muted)]"
+            } disabled:cursor-not-allowed disabled:opacity-60`}
+          >
+            {isRecording ? <Square size={12} className="fill-current" /> : <Circle size={12} />}
+            <span className="text-xs font-medium">
+              {recording.isUploading ? "Uploading…" : isRecording ? "REC" : "Record"}
+            </span>
+          </button>
         )}
 
         <div className="mx-1.5 h-8 w-px bg-[var(--border)]" />

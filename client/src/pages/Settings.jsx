@@ -3,6 +3,7 @@ import PageHeader from "../shared/ui/PageHeader.jsx";
 import NotificationSettings from "../features/settings/NotificationSettings.jsx";
 import AppearanceSettings from "../features/settings/AppearanceSettings.jsx";
 import AccessibilitySettings from "../features/settings/AccessibilitySettings.jsx";
+import IntegrationsSettings from "../features/settings/IntegrationsSettings.jsx";
 
 export default function Settings() {
   return (
@@ -16,6 +17,7 @@ export default function Settings() {
         <AppearanceSettings />
         <NotificationSettings />
         <AccessibilitySettings />
+        <IntegrationsSettings />
       </div>
     </DashboardLayout>
   );

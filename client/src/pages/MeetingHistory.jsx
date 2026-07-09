@@ -75,6 +75,11 @@ export default function MeetingHistory() {
                         ) : (
                           <span className="text-[var(--text-muted)]">—</span>
                         )}
+                        {m.recordingUrl && (
+                          <span className="ml-1.5 inline-flex items-center gap-1 text-xs text-[var(--text-muted)]">
+                            <Video size={10} /> Recorded
+                          </span>
+                        )}
                       </Table.Cell>
                       <Table.Cell align="right">
                         <div className="flex items-center justify-end gap-2">

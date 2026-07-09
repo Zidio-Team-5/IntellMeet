@@ -30,6 +30,7 @@ export default function useMeetingMedia(meetingId) {
   const localStreamRef = useRef(null);
   const cameraTrackRef = useRef(null);
   const activeVideoTrackRef = useRef(null); // whichever track is CURRENTLY going out: camera or screen
+  const videoEnabledRef = useRef(videoEnabled); // read inside the PIP draw loop without retriggering screen-share start/stop
   const pendingPeersRef = useRef([]); // peers to offer once media is ready
   const recognitionRef = useRef(null);
 
@@ -151,6 +152,7 @@ export default function useMeetingMedia(meetingId) {
 
   // ---- 2) React to mute/unmute toggles: flip track.enabled + tell others ----
   useEffect(() => {
+    videoEnabledRef.current = videoEnabled;
     const stream = localStreamRef.current;
     if (stream) {
       stream.getAudioTracks().forEach((t) => (t.enabled = audioEnabled));
@@ -164,9 +166,19 @@ export default function useMeetingMedia(meetingId) {
     }
   }, [audioEnabled, videoEnabled, screenSharing, handRaised, meetingId]);
 
-  // ---- 3) Screen share: swap the outgoing video track on every peer ----
+  // ---- 3) Screen share: composite camera as a small PIP square over the
+  // shared screen (via canvas), then swap the outgoing video track on every
+  // peer to the composited stream. If the camera is off, just the screen
+  // goes out. videoEnabledRef is read (not a dependency) so toggling the
+  // camera mid-share doesn't restart the screen capture.
   useEffect(() => {
     let displayStream = null;
+    let rafId = null;
+    let canvas = null;
+    let ctx = null;
+    let screenVideoEl = null;
+    let camVideoEl = null;
+
     const replaceVideoTrack = (track) => {
       webrtc.peerConnections.forEach((pc) => {
         const sender = pc.getSenders().find((s) => s.track && s.track.kind === "video");
@@ -174,20 +186,64 @@ export default function useMeetingMedia(meetingId) {
       });
     };
 
+    const drawFrame = () => {
+      if (!ctx || !canvas) return;
+      const w = canvas.width, h = canvas.height;
+      ctx.drawImage(screenVideoEl, 0, 0, w, h);
+      if (videoEnabledRef.current && camVideoEl && camVideoEl.readyState >= 2) {
+        const pipW = Math.round(w * 0.2);
+        const pipH = Math.round(pipW * 9 / 16);
+        const pad = Math.round(w * 0.015);
+        const x = w - pipW - pad;
+        const y = h - pipH - pad;
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.4)";
+        ctx.shadowBlur = 12;
+        ctx.drawImage(camVideoEl, x, y, pipW, pipH);
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = "rgba(255,255,255,0.9)";
+        ctx.lineWidth = Math.max(2, Math.round(w * 0.002));
+        ctx.strokeRect(x, y, pipW, pipH);
+        ctx.restore();
+      }
+      rafId = requestAnimationFrame(drawFrame);
+    };
+
     const start = async () => {
       try {
         displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
         const screenTrack = displayStream.getVideoTracks()[0];
-        activeVideoTrackRef.current = screenTrack;
-        replaceVideoTrack(screenTrack);
-        // Show locally too.
+
+        screenVideoEl = document.createElement("video");
+        screenVideoEl.muted = true;
+        screenVideoEl.playsInline = true;
+        screenVideoEl.srcObject = new MediaStream([screenTrack]);
+        await screenVideoEl.play().catch(() => {});
+
+        if (cameraTrackRef.current) {
+          camVideoEl = document.createElement("video");
+          camVideoEl.muted = true;
+          camVideoEl.playsInline = true;
+          camVideoEl.srcObject = new MediaStream([cameraTrackRef.current]);
+          await camVideoEl.play().catch(() => {});
+        }
+
+        canvas = document.createElement("canvas");
+        canvas.width = screenVideoEl.videoWidth || 1280;
+        canvas.height = screenVideoEl.videoHeight || 720;
+        ctx = canvas.getContext("2d");
+
+        const canvasStream = canvas.captureStream(30);
+        const canvasTrack = canvasStream.getVideoTracks()[0];
+        activeVideoTrackRef.current = canvasTrack;
+        replaceVideoTrack(canvasTrack);
+        drawFrame();
+
         if (localStreamRef.current) {
-          const composed = new MediaStream([
-            screenTrack,
-            ...localStreamRef.current.getAudioTracks(),
-          ]);
+          const composed = new MediaStream([canvasTrack, ...localStreamRef.current.getAudioTracks()]);
           setStoreLocalStream(composed);
         }
+
         // When the user stops sharing from the browser UI, revert.
         screenTrack.onended = () => setScreenSharing(false);
       } catch {
@@ -204,7 +260,10 @@ export default function useMeetingMedia(meetingId) {
 
     if (screenSharing) start(); else if (localStreamRef.current) stop();
 
-    return () => { if (displayStream) displayStream.getTracks().forEach((t) => t.stop()); };
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      if (displayStream) displayStream.getTracks().forEach((t) => t.stop());
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screenSharing]);
 

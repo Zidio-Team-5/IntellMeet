@@ -11,9 +11,17 @@ export default function AccountSettings() {
   const updateProfile = useUpdateProfile();
   const [form, setForm] = useState({
     name: user?.name || "",
-    email: user?.email || "",
+    jobTitle: user?.jobTitle || "",
     department: user?.department || "",
+    phone: user?.phone || "",
+    location: user?.location || "",
     timezone: user?.timezone || "UTC",
+    bio: user?.bio || "",
+    skills: (user?.skills || []).join(", "),
+    linkedin: user?.socialLinks?.linkedin || "",
+    github: user?.socialLinks?.github || "",
+    twitter: user?.socialLinks?.twitter || "",
+    website: user?.socialLinks?.website || "",
   });
 
   const handleChange = (e) =>
@@ -21,7 +29,13 @@ export default function AccountSettings() {
 
   const handleSave = (e) => {
     e.preventDefault();
-    updateProfile.mutate(form);
+    const { linkedin, github, twitter, website, skills, ...rest } = form;
+    const payload = {
+      ...rest,
+      skills: skills.split(",").map((s) => s.trim()).filter(Boolean),
+      socialLinks: { linkedin, github, twitter, website },
+    };
+    updateProfile.mutate(payload);
   };
 
   return (
@@ -30,8 +44,10 @@ export default function AccountSettings() {
       <form onSubmit={handleSave} className="space-y-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Input label="Full Name" name="name" value={form.name} onChange={handleChange} />
-          <Input label="Email" name="email" type="email" value={form.email} onChange={handleChange} />
+          <Input label="Job title" name="jobTitle" value={form.jobTitle} onChange={handleChange} placeholder="e.g. Senior Engineer" />
           <Input label="Department" name="department" value={form.department} onChange={handleChange} placeholder="e.g. Engineering" />
+          <Input label="Phone" name="phone" value={form.phone} onChange={handleChange} placeholder="+1 555 123 4567" />
+          <Input label="Location" name="location" value={form.location} onChange={handleChange} placeholder="e.g. Bengaluru, India" />
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-[var(--text)]">Timezone</label>
             <select
@@ -46,6 +62,24 @@ export default function AccountSettings() {
               <option value="Europe/Berlin">Europe/Berlin (CET)</option>
             </select>
           </div>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-[var(--text)]">Bio</label>
+          <textarea
+            name="bio" value={form.bio} onChange={handleChange} rows={3}
+            placeholder="A short bio your teammates will see…"
+            className="w-full resize-none rounded-md border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] outline-none transition-colors hover:border-[var(--border-hover)] focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/25"
+          />
+        </div>
+
+        <Input label="Skills" name="skills" value={form.skills} onChange={handleChange} placeholder="React, Node.js, Figma (comma-separated)" />
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Input label="LinkedIn" name="linkedin" value={form.linkedin} onChange={handleChange} placeholder="https://linkedin.com/in/…" />
+          <Input label="GitHub" name="github" value={form.github} onChange={handleChange} placeholder="https://github.com/…" />
+          <Input label="Twitter / X" name="twitter" value={form.twitter} onChange={handleChange} placeholder="https://x.com/…" />
+          <Input label="Website" name="website" value={form.website} onChange={handleChange} placeholder="https://…" />
         </div>
 
         {updateProfile.isSuccess && (

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, User, ShieldCheck } from "lucide-react";
 import Button from "../../shared/ui/Button.jsx";
 import Input from "../../shared/ui/Input.jsx";
@@ -14,9 +14,10 @@ const errMsg = (m, fallback) => m?.response?.data?.message || fallback;
 
 // 3-step signup: (1) name+email -> emailed OTP, (2) enter OTP, (3) set password.
 export default function RegisterForm() {
+  const location = useLocation();
   const [step, setStep] = useState("details"); // details | otp | password
   const [showPw, setShowPw] = useState(false);
-  const [details, setDetails] = useState({ name: "", email: "" });
+  const [details, setDetails] = useState({ name: "", email: location.state?.email || "" });
   const [code, setCode] = useState("");
   const [pw, setPw] = useState({ password: "", confirmPassword: "" });
   const [errors, setErrors] = useState({});

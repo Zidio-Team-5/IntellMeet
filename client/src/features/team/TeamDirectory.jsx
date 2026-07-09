@@ -7,6 +7,7 @@ import Badge from "../../shared/ui/Badge.jsx";
 import Button from "../../shared/ui/Button.jsx";
 import TeamMemberCard from "./TeamMemberCard.jsx";
 import AddMemberModal from "./AddMemberModal.jsx";
+import MemberDetailModal from "./MemberDetailModal.jsx";
 import { TableSkeleton } from "../../shared/ui/Skeleton.jsx";
 import EmptyState from "../../shared/ui/EmptyState.jsx";
 import { getTeamMembers, promoteMember, demoteMember, removeMember } from "../../services/teamService.js";
@@ -25,6 +26,7 @@ const FALLBACK = [
 export default function TeamDirectory() {
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
   const { user } = useAuthStore();
   const isAdmin = user?.role === "admin";
   const queryClient = useQueryClient();
@@ -102,10 +104,14 @@ export default function TeamDirectory() {
                   return (
                     <Table.Row key={id}>
                       <Table.Cell>
-                        <div className="flex items-center gap-2.5">
+                        <button
+                          onClick={() => setSelectedMember(m)}
+                          className="flex items-center gap-2.5 text-left hover:underline"
+                          title="View profile"
+                        >
                           <Avatar name={m.name || "U"} size="sm" showStatus online={isOnline} />
                           <span className="font-medium text-[var(--text)]">{m.name}</span>
-                        </div>
+                        </button>
                       </Table.Cell>
                       <Table.Cell>
                         {memberIsAdmin ? (
@@ -179,13 +185,14 @@ export default function TeamDirectory() {
           {/* Mobile: member cards */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:hidden">
             {members.map((m) => (
-              <TeamMemberCard key={m._id || m.id} member={m} />
+              <TeamMemberCard key={m._id || m.id} member={m} onClick={() => setSelectedMember(m)} />
             ))}
           </div>
         </>
       )}
 
       <AddMemberModal isOpen={showAdd} onClose={() => setShowAdd(false)} />
+      <MemberDetailModal member={selectedMember} onClose={() => setSelectedMember(null)} />
     </div>
   );
 }
