@@ -29,6 +29,7 @@ export default function useMeetingMedia(meetingId) {
 
   const localStreamRef = useRef(null);
   const cameraTrackRef = useRef(null);
+  const activeVideoTrackRef = useRef(null); // whichever track is CURRENTLY going out: camera or screen
   const pendingPeersRef = useRef([]); // peers to offer once media is ready
   const recognitionRef = useRef(null);
 
@@ -46,6 +47,13 @@ export default function useMeetingMedia(meetingId) {
       if (!pc) {
         pc = webrtc.createPeerConnection(peerSocketId, sendIce, onRemoteTrack);
         if (localStreamRef.current) webrtc.addLocalStream(peerSocketId, localStreamRef.current);
+        // If screen sharing is already in progress when this peer connects,
+        // the line above just added the camera track — swap it for the
+        // active screen track so late joiners see the share too.
+        if (activeVideoTrackRef.current && activeVideoTrackRef.current !== cameraTrackRef.current) {
+          const sender = pc.getSenders().find((s) => s.track && s.track.kind === "video");
+          if (sender) sender.replaceTrack(activeVideoTrackRef.current).catch(() => {});
+        }
       }
       return pc;
     };
@@ -82,6 +90,7 @@ export default function useMeetingMedia(meetingId) {
       if (cancelled) { stream.getTracks().forEach((t) => t.stop()); return; }
       localStreamRef.current = stream;
       cameraTrackRef.current = stream.getVideoTracks()[0] || null;
+      activeVideoTrackRef.current = cameraTrackRef.current;
       stream.getAudioTracks().forEach((t) => (t.enabled = audioEnabled));
       stream.getVideoTracks().forEach((t) => (t.enabled = videoEnabled));
       setLocalStream(stream);
@@ -169,6 +178,7 @@ export default function useMeetingMedia(meetingId) {
       try {
         displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
         const screenTrack = displayStream.getVideoTracks()[0];
+        activeVideoTrackRef.current = screenTrack;
         replaceVideoTrack(screenTrack);
         // Show locally too.
         if (localStreamRef.current) {
@@ -187,6 +197,7 @@ export default function useMeetingMedia(meetingId) {
 
     const stop = () => {
       const cam = cameraTrackRef.current;
+      activeVideoTrackRef.current = cam;
       if (cam) replaceVideoTrack(cam);
       if (localStreamRef.current) setStoreLocalStream(localStreamRef.current);
     };

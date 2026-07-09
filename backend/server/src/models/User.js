@@ -20,7 +20,7 @@ const UserSchema = new Schema(
     otp: {
       codeHash: { type: String, default: "" },
       expiresAt: { type: Date, default: null },
-      purpose: { type: String, enum: ["signup", "invite", ""], default: "" },
+      purpose: { type: String, enum: ["signup", "invite", "reset", ""], default: "" },
       attempts: { type: Number, default: 0 },
     },
   },

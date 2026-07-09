@@ -28,3 +28,9 @@ services:
         sync: false
       - key: GEMINI_MODEL
         value: gemini-2.0-flash
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: EMAIL_FROM
+        sync: false

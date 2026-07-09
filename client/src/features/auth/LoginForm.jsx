@@ -42,16 +42,24 @@ export default function LoginForm() {
             label="Email" name="email" type="email" value={form.email}
             placeholder="name@company.com" icon={Mail} autoComplete="email" required onChange={handleChange}
           />
-          <Input
-            label="Password" name="password" type={showPassword ? "text" : "password"} value={form.password}
-            placeholder="Enter your password" icon={Lock} autoComplete="current-password" required onChange={handleChange}
-            rightElement={
-              <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"}
-                className="text-[var(--text-muted)] transition-colors hover:text-[var(--text)]">
-                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-              </button>
-            }
-          />
+          <div>
+            <div className="mb-1.5 flex items-center justify-between">
+              <label className="text-sm font-medium text-[var(--text)]">Password</label>
+              <Link to="/forgot-password" className="text-xs font-medium text-[var(--brand)] hover:underline">
+                Forgot password?
+              </Link>
+            </div>
+            <Input
+              name="password" type={showPassword ? "text" : "password"} value={form.password}
+              placeholder="Enter your password" icon={Lock} autoComplete="current-password" required onChange={handleChange}
+              rightElement={
+                <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="text-[var(--text-muted)] transition-colors hover:text-[var(--text)]">
+                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              }
+            />
+          </div>
 
           <Button type="submit" className="mt-2 w-full" size="lg" loading={loginMutation.isPending}>
             Sign in

@@ -1,3 +1,4 @@
+import { useEffect, useRef, memo } from "react";
 import { Mic, MicOff, Hand, MonitorUp, Pin, PinOff, Eye, EyeOff } from "lucide-react";
 import { initials, avatarColor } from "../../shared/utils/formatters.js";
 import useParticipantStore from "../../core/store/participantStore.js";
@@ -18,7 +19,7 @@ function TileControls({ id, isLocal, pinned, hidden, onPin, onHide }) {
   );
 }
 
-function VideoTile({ participant, isLocal, isScreen = false, compact = false, fill = false }) {
+const VideoTile = memo(function VideoTile({ participant, isLocal, isScreen = false, compact = false, fill = false }) {
   const { pinnedId, hiddenVideoIds, togglePin, toggleHiddenVideo } = useParticipantStore();
   const pid = participant?.socketId || participant?.id;
   const pinned = pinnedId === pid;
@@ -28,13 +29,25 @@ function VideoTile({ participant, isLocal, isScreen = false, compact = false, fi
   const avatarClass = compact ? "h-10 w-10 text-sm" : "h-16 w-16 text-xl";
   const showVideo = participant?.stream && !participant?.videoMuted && !(hidden && !isLocal);
 
+  const videoRef = useRef(null);
+  // Only touch srcObject when the actual stream reference changes — not on
+  // every re-render (mute toggles, hand-raise, presence updates from OTHER
+  // participants all re-render this tree). Reassigning srcObject to the
+  // stream it already has is what was causing the flicker with 2+ people.
+  useEffect(() => {
+    const el = videoRef.current;
+    if (el && participant?.stream && el.srcObject !== participant.stream) {
+      el.srcObject = participant.stream;
+    }
+  }, [participant?.stream]);
+
   return (
     <div className={`group relative flex ${sizeClass} items-center justify-center overflow-hidden rounded-lg border ${showHand ? "border-[var(--brand)]" : "border-[var(--border)]"} bg-[var(--card)]`}>
       {showVideo ? (
         <video
+          ref={videoRef}
           autoPlay muted={isLocal} playsInline
           className={`h-full w-full ${isScreen ? "object-contain bg-black" : "object-contain bg-black"}`}
-          ref={(el) => { if (el && participant.stream) el.srcObject = participant.stream; }}
         />
       ) : (
         <div className="flex flex-col items-center gap-2">
@@ -67,7 +80,7 @@ function VideoTile({ participant, isLocal, isScreen = false, compact = false, fi
       )}
     </div>
   );
-}
+});
 
 const colsFor = (n) =>
   n <= 1 ? "grid-cols-1" : n <= 4 ? "grid-cols-2" : n <= 9 ? "grid-cols-3" : "grid-cols-4";

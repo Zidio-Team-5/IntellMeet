@@ -86,6 +86,24 @@ export const sendOtpEmail = (to, { name, code, purpose }) => {
   });
 };
 
+export const sendPasswordResetEmail = (to, { name, code }) => sendMail({
+  to, subject: "Reset your IntellMeet password",
+  html: wrap("Reset your password", `
+    <p>Hi ${name || ""},</p>
+    <p>We received a request to reset your IntellMeet password. Use the code below to continue.</p>
+    <p style="font-size:28px;font-weight:700;letter-spacing:4px;margin:20px 0;text-align:center;background:#f4f4f8;padding:16px;border-radius:8px;">${code}</p>
+    <p>This code expires in 10 minutes. If you didn't request this, your password is still safe — just ignore this email.</p>
+  `),
+});
+
+export const sendPasswordChangedEmail = (to, { name }) => sendMail({
+  to, subject: "Your IntellMeet password was changed",
+  html: wrap("Password changed", `
+    <p>Hi ${name || ""},</p>
+    <p>Your password was just changed. If this wasn't you, contact your workspace admin immediately.</p>
+  `),
+});
+
 export const sendAccountCreatedEmail = (to, { name }) => sendMail({
   to, subject: "Your IntellMeet account is ready",
   html: wrap("Welcome to IntellMeet", `

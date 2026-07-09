@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { User } from "../models/User.js";
 import { signToken } from "../utils/jwt.js";
 import { buildOtpRecord, checkOtp } from "../utils/otp.js";
-import { sendOtpEmail, sendAccountCreatedEmail } from "./emailService.js";
+import { sendOtpEmail, sendAccountCreatedEmail, sendPasswordResetEmail, sendPasswordChangedEmail } from "./emailService.js";
 
 // Shape the user object exactly as the frontend reads it (authStore.user).
 export const publicUser = (u) => ({
@@ -89,6 +89,46 @@ export const setPassword = async ({ email, password }) => {
   await user.save();
   await sendAccountCreatedEmail(normEmail, { name: user.name });
   return { user: publicUser(user), token: signToken(user) };
+};
+
+// Forgot password — step 1: email a reset OTP. Always returns the same
+// generic message whether or not the account exists, so this can't be used
+// to enumerate registered emails.
+export const forgotPassword = async ({ email }) => {
+  const normEmail = String(email || "").toLowerCase().trim();
+  const generic = { message: "If that email is registered, a reset code has been sent." };
+  if (!normEmail) throw badRequest("Email is required.");
+
+  const user = await User.findOne({ email: normEmail });
+  if (!user || !(user.hasPassword || user.password)) return generic;
+
+  const { code, record } = buildOtpRecord("reset");
+  user.otp = record;
+  await user.save();
+  await sendPasswordResetEmail(normEmail, { name: user.name, code });
+  return generic;
+};
+
+// Forgot password — step 2: confirm the code and set a new password.
+export const resetPassword = async ({ email, code, password }) => {
+  const normEmail = String(email || "").toLowerCase().trim();
+  if (!password || password.length < 8) throw badRequest("Password must be at least 8 characters.");
+  const user = await User.findOne({ email: normEmail });
+  if (!user) throw badRequest("Invalid or expired code.");
+
+  const result = checkOtp(user.otp, code);
+  if (!result.ok || user.otp.purpose !== "reset") {
+    user.otp.attempts = (user.otp.attempts || 0) + 1;
+    await user.save();
+    throw badRequest(result.ok ? "Invalid code." : result.reason);
+  }
+
+  user.password = await bcrypt.hash(password, 10);
+  user.hasPassword = true;
+  user.otp = { codeHash: "", expiresAt: null, purpose: "", attempts: 0 };
+  await user.save();
+  sendPasswordChangedEmail(normEmail, { name: user.name }).catch(() => {});
+  return { message: "Password reset. You can now log in." };
 };
 
 export const login = async ({ email, password }) => {

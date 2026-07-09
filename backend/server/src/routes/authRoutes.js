@@ -6,6 +6,8 @@ r.post("/register", c.register);
 r.post("/resend-otp", c.resendOtp);
 r.post("/verify-otp", c.verifyOtp);
 r.post("/set-password", c.setPassword);
+r.post("/forgot-password", c.forgotPassword);
+r.post("/reset-password", c.resetPassword);
 r.post("/login", c.login);
 r.post("/logout", c.logout);
 r.post("/refresh", authMiddleware, c.refresh);

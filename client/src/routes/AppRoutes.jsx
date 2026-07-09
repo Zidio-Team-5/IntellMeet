@@ -8,6 +8,7 @@ import Notifications from "../pages/Notifications.jsx";
 
 const Login        = lazy(() => import("../pages/Login.jsx"));
 const Register     = lazy(() => import("../pages/Register.jsx"));
+const ForgotPassword = lazy(() => import("../pages/ForgotPassword.jsx"));
 const Dashboard    = lazy(() => import("../pages/Dashboard.jsx"));
 const Meetings     = lazy(() => import("../pages/Meetings.jsx"));
 const MeetingRoom  = lazy(() => import("../pages/MeetingRoom.jsx"));
@@ -29,6 +30,7 @@ export default function AppRoutes() {
         {/* Public */}
         <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+        <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
 
         {/* Protected */}
         <Route path="/dashboard"   element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

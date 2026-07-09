@@ -5,6 +5,8 @@ export const API_ENDPOINTS = {
     RESEND_OTP: "/auth/resend-otp",
     VERIFY_OTP: "/auth/verify-otp",
     SET_PASSWORD: "/auth/set-password",
+    FORGOT_PASSWORD: "/auth/forgot-password",
+    RESET_PASSWORD: "/auth/reset-password",
     PROFILE: "/auth/profile",
     LOGOUT: "/auth/logout",
     REFRESH: "/auth/refresh",
