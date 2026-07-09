@@ -1,6 +1,7 @@
 import { Task } from "../models/Task.js";
 import { User } from "../models/User.js";
 import { notify } from "./notificationService.js";
+import { sendTaskAssignedEmail } from "./emailService.js";
 
 const VALID = ["todo", "in_progress", "completed"];
 const notFound = () => { const e = new Error("Task not found."); e.status = 404; return e; };
@@ -14,12 +15,15 @@ const normStatus = (s) => {
 };
 
 
-// Notify the assignee (matched by name) that a task was assigned to them.
-const notifyAssignee = async (assignee, title) => {
-  if (!assignee) return;
+// Notify the assignee (matched by userId if given, else by name) both
+// in-app and by email that a task was assigned to them.
+const notifyAssignee = async (assignee, title, priority, assigneeId) => {
+  if (!assignee && !assigneeId) return;
   try {
-    const u = await User.findOne({ name: assignee });
-    if (u) notify(u._id, { type: "task", message: `You were assigned: "${title}".` }).catch(() => {});
+    const u = assigneeId ? await User.findById(assigneeId) : await User.findOne({ name: assignee });
+    if (!u) return;
+    notify(u._id, { type: "task", message: `You were assigned: "${title}".` }).catch(() => {});
+    sendTaskAssignedEmail(u.email, { name: u.name, taskTitle: title, priority }).catch(() => {});
   } catch { /* best-effort */ }
 };
 
@@ -41,7 +45,7 @@ export const create = async (b) => {
     assignee: b.assignee || "", priority: b.priority || "medium",
     status: normStatus(b.status) || "todo", dueDate: b.dueDate,
   });
-  if (t.assignee) notifyAssignee(t.assignee, t.title);
+  if (t.assignee) notifyAssignee(t.assignee, t.title, t.priority, b.assigneeId);
   return serialize(t);
 };
 
@@ -58,10 +62,10 @@ export const update = async (id, b) => {
   return serialize(t);
 };
 
-export const assign = async (id, assignee) => {
+export const assign = async (id, assignee, assigneeId) => {
   const t = await Task.findByIdAndUpdate(id, { assignee }, { new: true });
   if (!t) throw notFound();
-  notifyAssignee(assignee, t.title);
+  notifyAssignee(assignee, t.title, t.priority, assigneeId);
   return serialize(t);
 };
 

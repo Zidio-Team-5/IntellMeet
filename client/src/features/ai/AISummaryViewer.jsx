@@ -4,6 +4,7 @@ import Card from "../../shared/ui/Card.jsx";
 import Button from "../../shared/ui/Button.jsx";
 import EmptyState from "../../shared/ui/EmptyState.jsx";
 import useAISummary from "../../shared/hooks/useAISummary.js";
+import useAIContextStore from "../../core/store/aiContextStore.js";
 
 const SAMPLE_TRANSCRIPT = "Team reviewed sprint goals. Backend API integration is complete. Frontend team will begin WebRTC implementation next week. Deployment to staging planned for Thursday. Action items assigned to Alex, Sarah, and John.";
 
@@ -11,9 +12,10 @@ export default function AISummaryViewer({ summary: propSummary, transcript }) {
   const [summary, setSummary] = useState(propSummary || "");
   const [copied, setCopied] = useState(false);
   const aiSummary = useAISummary();
+  const { attachedText } = useAIContextStore();
 
   const handleGenerate = async () => {
-    const text = transcript || SAMPLE_TRANSCRIPT;
+    const text = transcript || attachedText || SAMPLE_TRANSCRIPT;
     try {
       const result = await aiSummary.mutateAsync(text);
       setSummary(result.summary || result.text || result);

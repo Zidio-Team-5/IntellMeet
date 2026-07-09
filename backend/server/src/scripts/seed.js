@@ -23,7 +23,12 @@ const avatar = (name) =>
   `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`;
 
 const USERS = [
-  { name: "Alice Admin", email: "alice@intellmeet.test", password: "password123", role: "admin", department: "Leadership" },
+  {
+    name: process.env.DEMO_ADMIN_NAME || "Alice Admin",
+    email: (process.env.DEMO_ADMIN_EMAIL || "alice@intellmeet.test").toLowerCase(),
+    password: process.env.DEMO_ADMIN_PASSWORD || "password123",
+    role: "admin", department: "Leadership",
+  },
   { name: "Bob Builder", email: "bob@intellmeet.test", password: "password123", role: "member", department: "Engineering" },
   { name: "Carol Chen", email: "carol@intellmeet.test", password: "password123", role: "member", department: "Design" },
 ];
@@ -37,7 +42,7 @@ const run = async () => {
     const hashed = await bcrypt.hash(u.password, 10);
     const doc = await User.findOneAndUpdate(
       { email: u.email },
-      { name: u.name, email: u.email, password: hashed, role: u.role, department: u.department, avatar: avatar(u.name) },
+      { name: u.name, email: u.email, password: hashed, role: u.role, department: u.department, avatar: avatar(u.name), isVerified: true, hasPassword: true },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
     userIds[u.email] = String(doc._id);
@@ -132,7 +137,7 @@ const run = async () => {
   ]);
 
   logger.info(`Seeded: ${USERS.length} users, 3 meetings, 3 tasks, 2 notifications.`);
-  logger.info("Login with: alice@intellmeet.test / password123  (admin)");
+  logger.info(`Login with: ${USERS[0].email} / ${USERS[0].password}  (admin)`);
   await mongoose.disconnect();
   process.exit(0);
 };

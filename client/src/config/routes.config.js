@@ -5,6 +5,8 @@ export const ROUTES = {
   MEETINGS: "/meetings",
   MEETING_ROOM: "/meeting/:id",
   MEETING_ROOM_PATH: (id) => `/meeting/${id}`,
+  MEETING_TRANSCRIPT: "/meeting/:id/transcript",
+  MEETING_TRANSCRIPT_PATH: (id) => `/meeting/${id}/transcript`,
   HISTORY: "/history",
   TASKS: "/tasks",
   ANALYTICS: "/analytics",

@@ -6,9 +6,14 @@ import Button from "../shared/ui/Button.jsx";
 import TaskMetrics from "../features/tasks/TaskMetrics.jsx";
 import KanbanBoard from "../features/tasks/KanbanBoard.jsx";
 import ActionItemImporter from "../features/tasks/ActionItemImporter.jsx";
+import NewTaskModal from "../features/tasks/NewTaskModal.jsx";
+import useAuthStore from "../core/store/authStore.js";
 
 export default function Tasks() {
   const [showImporter, setShowImporter] = useState(false);
+  const [showNewTask, setShowNewTask] = useState(false);
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === "admin";
 
   return (
     <DashboardLayout>
@@ -17,10 +22,14 @@ export default function Tasks() {
         subtitle="Kanban board — track and manage your team's work."
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowImporter((v) => !v)}>
-              Import from AI
-            </Button>
-            <Button icon={Plus}>New task</Button>
+            {isAdmin && (
+              <>
+                <Button variant="outline" onClick={() => setShowImporter((v) => !v)}>
+                  Import from AI
+                </Button>
+                <Button icon={Plus} onClick={() => setShowNewTask(true)}>New task</Button>
+              </>
+            )}
           </div>
         }
       />
@@ -36,6 +45,8 @@ export default function Tasks() {
       <div className="mt-6">
         <KanbanBoard />
       </div>
+
+      <NewTaskModal isOpen={showNewTask} onClose={() => setShowNewTask(false)} />
     </DashboardLayout>
   );
 }

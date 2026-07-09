@@ -10,6 +10,19 @@ const UserSchema = new Schema(
     department: { type: String, default: "" },
     settings: { type: Object, default: {} },
     stats: { type: Object, default: {} },
+
+    // --- Signup verification / invite flow ---
+    // isVerified: email OTP confirmed. hasPassword: user has set a real password
+    // (false for admin-invited members until they complete setup).
+    isVerified: { type: Boolean, default: false },
+    hasPassword: { type: Boolean, default: false },
+    invitedBy: { type: String, default: "" }, // userId of admin who added this member, if any
+    otp: {
+      codeHash: { type: String, default: "" },
+      expiresAt: { type: Date, default: null },
+      purpose: { type: String, enum: ["signup", "invite", ""], default: "" },
+      attempts: { type: Number, default: 0 },
+    },
   },
   { timestamps: true }
 );

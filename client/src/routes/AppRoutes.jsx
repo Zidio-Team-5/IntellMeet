@@ -11,6 +11,7 @@ const Register     = lazy(() => import("../pages/Register.jsx"));
 const Dashboard    = lazy(() => import("../pages/Dashboard.jsx"));
 const Meetings     = lazy(() => import("../pages/Meetings.jsx"));
 const MeetingRoom  = lazy(() => import("../pages/MeetingRoom.jsx"));
+const MeetingTranscript = lazy(() => import("../pages/MeetingTranscript.jsx"));
 const MeetingHistory = lazy(() => import("../pages/MeetingHistory.jsx"));
 const Tasks        = lazy(() => import("../pages/Tasks.jsx"));
 const Analytics    = lazy(() => import("../pages/Analytics.jsx"));
@@ -33,6 +34,7 @@ export default function AppRoutes() {
         <Route path="/dashboard"   element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/meetings"    element={<ProtectedRoute><Meetings /></ProtectedRoute>} />
         <Route path="/meeting/:id" element={<ProtectedRoute><MeetingRoom /></ProtectedRoute>} />
+        <Route path="/meeting/:id/transcript" element={<ProtectedRoute><MeetingTranscript /></ProtectedRoute>} />
         <Route path="/history"     element={<ProtectedRoute><MeetingHistory /></ProtectedRoute>} />
         <Route path="/tasks"       element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
         <Route path="/analytics"   element={<ProtectedRoute><Analytics /></ProtectedRoute>} />

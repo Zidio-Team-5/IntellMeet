@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Video, Clock, Sparkles, ArrowRight } from "lucide-react";
+import { Video, Clock, Sparkles, ArrowRight, FileText } from "lucide-react";
 import DashboardLayout from "../shared/layouts/DashboardLayout.jsx";
 import PageHeader from "../shared/ui/PageHeader.jsx";
 import Table from "../shared/ui/Table.jsx";
@@ -77,9 +77,14 @@ export default function MeetingHistory() {
                         )}
                       </Table.Cell>
                       <Table.Cell align="right">
-                        <Link to={`/meeting/${id}`}>
-                          <Button size="xs" variant="outline" icon={ArrowRight}>View</Button>
-                        </Link>
+                        <div className="flex items-center justify-end gap-2">
+                          <Link to={`/meeting/${id}/transcript`}>
+                            <Button size="xs" variant="ghost" icon={FileText}>Transcript</Button>
+                          </Link>
+                          <Link to={`/meeting/${id}`}>
+                            <Button size="xs" variant="outline" icon={ArrowRight}>View</Button>
+                          </Link>
+                        </div>
                       </Table.Cell>
                     </Table.Row>
                   );

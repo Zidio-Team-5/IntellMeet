@@ -4,3 +4,7 @@ export const list = async (_q, res, next) => { try { ok(res, await s.members());
 export const workload = async (_q, res, next) => { try { ok(res, await s.workload()); } catch (e) { next(e); } };
 export const presence = async (_q, res, next) => { try { ok(res, await s.presence()); } catch (e) { next(e); } };
 export const collaboration = async (_q, res, next) => { try { ok(res, await s.collaboration()); } catch (e) { next(e); } };
+export const promote = async (req, res, next) => { try { ok(res, await s.promote(req.params.id, req.user.userId)); } catch (e) { next(e); } };
+export const demote = async (req, res, next) => { try { ok(res, await s.demote(req.params.id, req.user.userId)); } catch (e) { next(e); } };
+export const addMember = async (req, res, next) => { try { ok(res, await s.addMember(req.body, req.user.userId), 201); } catch (e) { next(e); } };
+export const removeMember = async (req, res, next) => { try { ok(res, await s.removeMember(req.params.id, req.user.userId)); } catch (e) { next(e); } };

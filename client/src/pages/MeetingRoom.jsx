@@ -166,7 +166,7 @@ export default function MeetingRoom() {
               <ParticipantList participants={uniqueRemote} localParticipant={localParticipant} isHost={isHost} />
             </div>
             <div className={tab === "ai" ? "space-y-3" : "hidden"}>
-              <TranscriptPanel />
+              <TranscriptPanel meetingTitle={meeting?.title} />
               <AISummaryPanel
                 summary={summary}
                 onGenerate={() => notesMutation.mutate()}

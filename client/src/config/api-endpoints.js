@@ -2,6 +2,9 @@ export const API_ENDPOINTS = {
   AUTH: {
     LOGIN: "/auth/login",
     REGISTER: "/auth/register",
+    RESEND_OTP: "/auth/resend-otp",
+    VERIFY_OTP: "/auth/verify-otp",
+    SET_PASSWORD: "/auth/set-password",
     PROFILE: "/auth/profile",
     LOGOUT: "/auth/logout",
     REFRESH: "/auth/refresh",
@@ -62,6 +65,10 @@ export const API_ENDPOINTS = {
     WORKLOAD: "/team/workload",
     PRESENCE: "/team/presence",
     COLLABORATION: "/team/collaboration",
+    ADD_MEMBER: "/team",
+    PROMOTE: (id) => `/team/${id}/promote`,
+    DEMOTE: (id) => `/team/${id}/demote`,
+    REMOVE: (id) => `/team/${id}`,
   },
   NOTIFICATIONS: {
     LIST: "/notifications",
